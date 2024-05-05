@@ -1,0 +1,15 @@
+Babel==2.14.0
+chardet==5.2.0
+customtkinter==5.2.2
+darkdetect==0.8.0
+Faker==24.14.0
+mypy==1.9.0
+mypy-extensions==1.0.0
+mysql-connector-python==8.3.0
+packaging==24.0
+pillow==10.3.0
+python-dateutil==2.9.0.post0
+reportlab==4.1.0
+six==1.16.0
+tkcalendar==1.6.1
+typing_extensions==4.11.0
