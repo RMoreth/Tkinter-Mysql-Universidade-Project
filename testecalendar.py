@@ -1,44 +1,39 @@
 import tkinter as tk
-from tkinter import messagebox
+
+# Function to update the label and button text based on the content of the Text widget
 
 
-def verificar_vazias():
-    # Lista para armazenar as entradas vazias
-    entradas_vazias = []
+def revise_content():
+    # Get the text from the Text widget (from the first character to the end, excluding the last character)
+    new_text = text_widget.get("1.0", "end-1c")
 
-    # Iterar sobre todas as Entry e verificar se estão vazias
-    for entry in entradas:
-        if entry.get().strip() == "":
-            entradas_vazias.append(entry)
+    # Update the label text with the new content
+    label.config(text=f"Updated Label: {new_text}")
 
-    # Se houver entradas vazias, exibir uma mensagem
-    if entradas_vazias:
-        messagebox.showwarning(
-            "Campos Vazios", "Por favor, preencha todos os campos.")
-    else:
-        # Caso contrário, fazer alguma outra ação
-        # Por exemplo, enviar os dados do formulário
-        pass
+    # Update the button text with the new content
+    button.config(text=f"Updated Button: {new_text}")
 
 
-# Criar a janela principal
-root = tk.Tk()
-root.title("Verificar Campos Vazios")
+# Create the main application window
+app = tk.Tk()
+app.title("Text Automatically Resize in Buttons and Lables")
+app.geometry("720x250")
 
-# Lista para armazenar todas as Entry
-entradas = []
+# Create a Text widget with a specified height, width, and word wrapping
+text_widget = tk.Text(app, height=3, width=30, wrap="word")
+# Insert initial text into the Text widget
+text_widget.insert("1.0", "Type here...")
 
-# Criar várias Entry
-for i in range(5):
-    entrada = tk.Entry(root)
-    entrada.pack()
-    # Adicionar cada Entry à lista de entradas
-    entradas.append(entrada)
+# Create a Label widget with an initial text
+label = tk.Label(app, text="Initial Label")
 
-# Botão para verificar campos vazios
-botao_verificar = tk.Button(
-    root, text="Verificar Campos Vazios", command=verificar_vazias)
-botao_verificar.pack()
+# Create a Button widget with the label "Update Content" and associate it with the update_content function
+button = tk.Button(app, text="Update Content", command=revise_content)
 
-# Executar o loop principal da interface gráfica
-root.mainloop()
+# Pack the widgets into the main window with some padding
+text_widget.pack(pady=10)
+label.pack(pady=10)
+button.pack(pady=10)
+
+# Run the Tkinter event loop to keep the application running
+app.mainloop()
