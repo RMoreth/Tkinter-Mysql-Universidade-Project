@@ -2,8 +2,10 @@ import customtkinter as ctk  # type:ignore
 from mysql.connector import connect
 from tkcalendar import DateEntry  # type:ignore
 import tkinter as tk
+from datetime import datetime
 from tkinter import ttk, messagebox
 import traceback
+import brazilcep
 
 
 janela = ctk.CTk()
@@ -28,7 +30,31 @@ class Funcs():
         print("Desconectado do banco de dados")
     # !SECTION - Banco de dados
 
+    def montar_dic_cursos(self):
+        self.conecta_bd()
+        self.cursor.execute(
+            """SELECT codCurso, nome FROM tbCurso""")
+        self.dic_cursos = {}
+        for (codCurso, nome) in self.cursor:
+            self.dic_cursos[nome] = codCurso
+        print(self.dic_cursos)
+        self.desconecta_bd()
+
+    def pegar_cpf(self):
+        self.entry_estado.set("")
+        self.entry_cidade.delete("0", tk.END)
+        self.entry_bairro.delete("0", tk.END)
+        self.entry_logradouro.delete("0", tk.END)
+        self.entry_numero.delete("0", tk.END)
+        zipcode = self.entry_cep.get()
+        dados_cep = brazilcep.get_address_from_cep(zipcode)
+        print(dados_cep)
+        self.entry_estado.set(dados_cep['uf'])
+        self.entry_cidade.insert(tk.END, dados_cep['city'])
+        self.entry_bairro.insert(tk.END, dados_cep['district'])
+        self.entry_logradouro.insert(tk.END, dados_cep['street'])
     # SECTION - Funções Aluno
+
     def variaveis_aluno(self):
         self.codra = self.entry_codra.get()  # type: ignore
         self.nome = self.entry_nome.get()  # type: ignore
@@ -43,6 +69,10 @@ class Funcs():
         self.cep = self.entry_cep.get()  # type: ignore
         self.logradouro = self.entry_logradouro.get()  # type: ignore
         self.numero = self.entry_numero.get()  # type: ignore
+        print(self.data_nasc)
+
+        if self.curso:
+            self.cod_curso = self.dic_cursos[self.curso]
 
     def select_listas_aluno(self):
         self.lista_alu.delete(*self.lista_alu.get_children())  # type: ignore
@@ -151,8 +181,6 @@ class Funcs():
 
             c = 0
             for v in campos_endereco[0]:
-                print(campos_endereco)
-                print(f"n={v}, c={c}")
                 match c:
                     case 0:
                         self.entry_cep.insert(tk.END, v)  # type: ignore
@@ -181,11 +209,71 @@ class Funcs():
         # self.indiceCurso = list(self.dicCursos.keys()).index(col8)
         # self.entry_curso.set(list(self.dicCursos.keys())[self.indiceCurso])
 
-    # !SECTION - Funções Aluno
-# !SECTION - Funções
+    def buscar_aluno(self):
+        self.variaveis_aluno()
+        self.montar_dic_cursos()
+        self.conecta_bd()
 
-# SECTION - APP(Classe)
-# SECTION - __INIT__
+        querrybusca = """
+                SELECT a.codRA,
+                a.nome,
+                a.cpf,
+                date_format(a.data_nasc, '%d/%m/%y'),
+                a.email,
+                a.statusmatricula,
+                c.nome
+                FROM tbaluno a
+                JOIN tbCurso c
+                ON a.codCurso = c.codCurso
+            """
+
+        where = []
+        values = []
+
+        if self.codra:
+            where.append("a.codRA = %s")
+            values.append(self.codra)
+        if self.nome:
+            where.append("a.nome LIKE %s")
+            values.append(f'%{self.nome}%')
+        if self.cpf:
+            where.append("a.cpf LIKE %s")
+            values.append(f'%{self.cpf}%')
+        if self.data_nasc:
+            self.data_nasc_obj = datetime.strptime(
+                self.data_nasc, "%d/%m/%Y")
+            self.data_nasc_format = self.data_nasc_obj.strftime("%Y-%m-%d")
+            where.append("a.data_nasc LIKE %s")
+            values.append(f"{self.data_nasc_format}")
+        if self.email:
+            where.append("a.email LIKE %s")
+            values.append(f'%{self.email}%')
+        if self.status_matricula:
+            where.append("a.statusmatricula LIKE %s")
+            values.append(self.status_matricula)
+        if self.curso:
+            where.append("c.nome LIKE %s")
+            values.append(f'%{self.curso}%')
+
+        if where:
+            querrybusca += " WHERE " + " AND ".join(where)
+            querrybusca += " ORDER BY a.nome ;"
+
+        self.cursor.execute(querrybusca, tuple(values))
+        lista_busca = self.cursor.fetchall()
+
+        self.lista_alu.delete(*self.lista_alu.get_children())
+        for i in lista_busca:
+            self.lista_alu.insert("", tk.END, values=i)
+
+        print(querrybusca)
+        print(values)
+        self.desconecta_bd()
+        # !SECTION - Funções Aluno
+        # !SECTION - Funções
+
+        # SECTION - APP(Classe)
+        # SECTION - __INIT__
 
 
 class App(Funcs):
@@ -241,6 +329,7 @@ class App(Funcs):
         self.frame_atual = ctk.CTkFrame(self.janela)
         self.frame_atual.place(relx=0.1, rely=0, relwidth=0.9, relheight=1)
 
+        self.montar_dic_cursos()
         self.tela_cadastro()
         self.frames_cadastro()
         self.widgets_alunos()
@@ -329,7 +418,11 @@ class App(Funcs):
         self.label_data_nasc.place(relx=0.06, rely=0.24,
                                    relwidth=0.2, anchor='c')
 
-        self.entry_data_nasc = DateEntry(self.frame_cadastro_aluno)
+        self.entry_data_nasc = DateEntry(self.frame_cadastro_aluno,
+                                         locale="pt_BR",
+                                         year=2000,
+                                         month=1,
+                                         day=1)
         self.entry_data_nasc.place(relx=0.112, rely=0.225, relwidth=0.06)
 
         self.label_email = ctk.CTkLabel(self.frame_cadastro_aluno,
@@ -355,15 +448,28 @@ class App(Funcs):
             values=['Ativa',
                     'Inativa',
                     'Trancado'])
+        self.entry_status_matricula.set('')
         self.entry_status_matricula.place(relx=0.11, rely=0.30, relwidth=0.08)
 
         # Labels e entradas endereço
         # SECTION - Endereço
-        # TODO - ordenar
+        self.label_cep = ctk.CTkButton(self.frame_cadastro_aluno,
+                                       fg_color='transparent',
+                                       border_color='green',
+                                       border_width=1,
+                                       command=self.pegar_cpf,
+                                       text='CEP')
+        self.label_cep.place(relx=0.29, rely=0.12, anchor='c')
+
+        self.entry_cep = ctk.CTkEntry(self.frame_cadastro_aluno,
+                                      fg_color='white',
+                                      text_color='black')
+        self.entry_cep.place(relx=0.32, rely=0.1, relwidth=0.07)
+
         self.label_estado = ctk.CTkLabel(self.frame_cadastro_aluno,
                                          text="Estado",
                                          fg_color="transparent")
-        self.label_estado.place(relx=0.29, rely=0.12, anchor='c')
+        self.label_estado.place(relx=0.29, rely=0.16, anchor='c')
 
         self.entry_estado = ctk.CTkComboBox(self.frame_cadastro_aluno,
                                             fg_color='white',
@@ -376,27 +482,18 @@ class App(Funcs):
                                                 'RS', 'RO', 'RR', 'SC', 'SP',
                                                 'SE', 'TO']
                                             )
-        self.entry_estado.place(relx=0.32, rely=0.1, relwidth=0.045)
+        self.entry_estado.set('')
+        self.entry_estado.place(relx=0.32, rely=0.14, relwidth=0.045)
 
         self.label_cidade = ctk.CTkLabel(self.frame_cadastro_aluno,
                                          fg_color='transparent',
                                          text="Cidade")
-        self.label_cidade.place(relx=0.29, rely=0.16, anchor='c')
+        self.label_cidade.place(relx=0.29, rely=0.20, anchor='c')
 
         self.entry_cidade = ctk.CTkEntry(self.frame_cadastro_aluno,
                                          fg_color='white',
                                          text_color='black')
-        self.entry_cidade.place(relx=0.32, rely=0.14, relwidth=0.1)
-
-        self.label_cep = ctk.CTkLabel(self.frame_cadastro_aluno,
-                                      fg_color='transparent',
-                                      text='CEP')
-        self.label_cep.place(relx=0.29, rely=0.2, anchor='c')
-
-        self.entry_cep = ctk.CTkEntry(self.frame_cadastro_aluno,
-                                      fg_color='white',
-                                      text_color='black')
-        self.entry_cep.place(relx=0.32, rely=0.18, relwidth=0.07)
+        self.entry_cidade.place(relx=0.32, rely=0.18, relwidth=0.1)
 
         self.label_bairro = ctk.CTkLabel(self.frame_cadastro_aluno,
                                          fg_color='transparent',
@@ -483,6 +580,7 @@ class App(Funcs):
                                                         '3',
                                                         '4',
                                                         '5'])
+        self.entry_prioridade.set('')
         self.entry_prioridade.place(relx=0.7, rely=0.05, relwidth=0.12)
 
         self.numero_label = ctk.CTkLabel(self.frame_tel,
@@ -526,12 +624,11 @@ class App(Funcs):
         self.entry_curso = ctk.CTkComboBox(self.frame_cadastro_aluno,
                                            fg_color='white',
                                            text_color='black',
-                                           values=["Curso 1",
-                                                   "Curso 2",
-                                                   "Curso 3",
-                                                   "Curso 4"],
+                                           values=list(self.dic_cursos.keys()),
                                            font=("Helvetica", 20),
+                                           dropdown_font=("Helvetica", 20),
                                            justify='center')
+        self.entry_curso.set('')
         self.entry_curso.place(relx=0.78, rely=0.4, anchor='c',
                                relwidth=0.3)
         # !SECTION - Entry Curso
@@ -577,7 +674,8 @@ class App(Funcs):
                                         border_color='gray75',
                                         border_width=1,
                                         fg_color='gray22',
-                                        text_color='black')
+                                        text_color='black',
+                                        command=self.buscar_aluno)
 
         self.btn_buscar.place(relx=0.45, rely=0.38, relwidth=0.07)
 
