@@ -5,7 +5,7 @@ import tkinter as tk
 from datetime import datetime
 from tkinter import ttk, messagebox
 import traceback
-import brazilcep
+import brazilcep  # type:ignore
 
 
 janela = ctk.CTk()
@@ -35,24 +35,25 @@ class Funcs():
         self.cursor.execute(
             """SELECT codCurso, nome FROM tbCurso""")
         self.dic_cursos = {}
-        for (codCurso, nome) in self.cursor:
+        for (codCurso, nome) in self.cursor:  # type:ignore
             self.dic_cursos[nome] = codCurso
         print(self.dic_cursos)
         self.desconecta_bd()
 
-    def pegar_cpf(self):
-        self.entry_estado.set("")
-        self.entry_cidade.delete("0", tk.END)
-        self.entry_bairro.delete("0", tk.END)
-        self.entry_logradouro.delete("0", tk.END)
-        self.entry_numero.delete("0", tk.END)
-        zipcode = self.entry_cep.get()
+    def pegar_cep(self):
+        self.entry_estado.set("")  # type:ignore
+        self.entry_cidade.delete("0", tk.END)  # type:ignore
+        self.entry_bairro.delete("0", tk.END)  # type:ignore
+        self.entry_logradouro.delete("0", tk.END)  # type:ignore
+        self.entry_numero.delete("0", tk.END)  # type:ignore
+        zipcode = self.entry_cep.get()  # type:ignore
         dados_cep = brazilcep.get_address_from_cep(zipcode)
         print(dados_cep)
-        self.entry_estado.set(dados_cep['uf'])
-        self.entry_cidade.insert(tk.END, dados_cep['city'])
-        self.entry_bairro.insert(tk.END, dados_cep['district'])
-        self.entry_logradouro.insert(tk.END, dados_cep['street'])
+        self.entry_estado.set(dados_cep['uf'])  # type:ignore
+        self.entry_cidade.insert(tk.END, dados_cep['city'])  # type:ignore
+        self.entry_bairro.insert(tk.END, dados_cep['district'])  # type:ignore
+        self.entry_logradouro.insert(
+            tk.END, dados_cep['street'])  # type:ignore
     # SECTION - Funções Aluno
 
     def variaveis_aluno(self):
@@ -81,7 +82,7 @@ class Funcs():
             QuerryA = """ SELECT a.codra,
                     a.nome,
                     a.cpf,
-                    date_format(a.data_nasc, '%d/%m/%y'),
+                    date_format(a.data_nasc, '%d/%m/%Y'),
                     a.email,
                     a.statusmatricula,
                     c.nome
@@ -213,18 +214,19 @@ class Funcs():
         self.variaveis_aluno()
         self.montar_dic_cursos()
         self.conecta_bd()
-
         querrybusca = """
                 SELECT a.codRA,
                 a.nome,
                 a.cpf,
-                date_format(a.data_nasc, '%d/%m/%y'),
+                date_format(a.data_nasc, '%d/%m/%Y'),
                 a.email,
                 a.statusmatricula,
                 c.nome
                 FROM tbaluno a
                 JOIN tbCurso c
                 ON a.codCurso = c.codCurso
+                JOIN tbEndereco e
+                ON e.codEndereco = a.codEndereco
             """
 
         where = []
@@ -243,6 +245,7 @@ class Funcs():
             self.data_nasc_obj = datetime.strptime(
                 self.data_nasc, "%d/%m/%Y")
             self.data_nasc_format = self.data_nasc_obj.strftime("%Y-%m-%d")
+            print(f'data = {self.data_nasc_format}')
             where.append("a.data_nasc LIKE %s")
             values.append(f"{self.data_nasc_format}")
         if self.email:
@@ -254,17 +257,35 @@ class Funcs():
         if self.curso:
             where.append("c.nome LIKE %s")
             values.append(f'%{self.curso}%')
+        if self.cep:
+            where.append("e.cep LIKE %s")
+            values.append(f'%{self.cep}%')
+        if self.estado:
+            where.append("e.estado LIKE %s")
+            values.append(self.estado)
+        if self.cidade:
+            where.append("e.cidade LIKE %s")
+            values.append(f'%{self.cidade}%')
+        if self.bairro:
+            where.append("e.bairro LIKE %s")
+            values.append(f"%{self.bairro}%")
+        if self.logradouro:
+            where.append("e.logradouro LIKE %s")
+            values.append(f"%{self.logradouro}%")
+        if self.numero:
+            where.append("e.numero LIKE %s")
+            values.append(f"%{self.numero}%")
 
         if where:
             querrybusca += " WHERE " + " AND ".join(where)
             querrybusca += " ORDER BY a.nome ;"
-
+        print(querrybusca)
         self.cursor.execute(querrybusca, tuple(values))
         lista_busca = self.cursor.fetchall()
 
-        self.lista_alu.delete(*self.lista_alu.get_children())
+        self.lista_alu.delete(*self.lista_alu.get_children())  # type:ignore
         for i in lista_busca:
-            self.lista_alu.insert("", tk.END, values=i)
+            self.lista_alu.insert("", tk.END, values=i)  # type:ignore
 
         print(querrybusca)
         print(values)
@@ -274,6 +295,135 @@ class Funcs():
 
         # SECTION - APP(Classe)
         # SECTION - __INIT__
+
+    def alterar_aluno(self):
+        self.variaveis_aluno()
+        if self.data_nasc:
+            self.data_nasc_obj = datetime.strptime(
+                self.data_nasc, "%d/%m/%Y")
+            self.data_nasc_format = self.data_nasc_obj.strftime("%Y-%m-%d")
+        try:
+            self.conecta_bd()
+            if self.codra:
+                querry_alu = """UPDATE tbAluno
+                                SET nome = %s,
+                                cpf = %s,
+                                data_nasc = %s,
+                                email = %s,
+                                statusmatricula = %s,
+                                codCurso = %s
+                                WHERE codRA = %s"""
+                dados_alu = (self.nome, self.cpf, self.data_nasc_format,
+                             self.email, self.status_matricula,
+                             self.cod_curso, self.codra)
+                self.cursor.execute("""SELECT codEndereco
+                                    FROM tbaluno
+                                    WHERE codra = %s""",
+                                    (self.codra,))
+                codEndereco = int(self.cursor.fetchone()[0])  # type:ignore
+                querry_end = """UPDATE tbEndereco
+                                SET cep = %s,
+                                estado = %s,
+                                cidade = %s,
+                                bairro = %s,
+                                logradouro = %s,
+                                numero = %s
+                                WHERE codEndereco = %s"""
+                dados_end = (self.cep, self.estado,
+                             self.cidade, self.bairro,
+                             self.logradouro, self.numero,
+                             codEndereco)
+
+                msg = f"""              CONFIRMAR ALTERAÇÕES ?
+
+                    NOME = {self.nome}
+                    CPF = {self.cpf}
+                    DATA DE NASCIMENTO = {self.data_nasc}
+                    EMAIL = {self.email}
+                    STATUS MATRICULA = {self.status_matricula}
+                    CURSO = {self.curso}
+                    CEP = {self.cep}
+                    ESTADO = {self.estado}
+                    CIDADE = {self.cidade}
+                    BAIRRO = {self.bairro}
+                    LOGRADOURO = {self.logradouro}
+                    NUMERO = {self.numero}"""
+
+                confirmar = messagebox.askyesno(title="confirmar", message=msg)
+                if confirmar is True:
+                    self.cursor.execute(querry_alu, dados_alu)
+                    self.conn.commit()
+                    self.cursor.execute(querry_end, dados_end)
+                    self.conn.commit()
+                    messagebox.showinfo(
+                        title="ALTERAÇÕES CONFIRMADAS",
+                        message="As alterações foram efetuadas"
+                    )
+                    self.select_listas_aluno()
+
+                else:
+                    messagebox.showinfo(
+                        title="ALTERAÇÕES CANCELADAS",
+                        message="As alterações foram revertidas"
+                    )
+                    self.conn.rollback()
+            else:
+                messagebox.showerror(
+                    title='ERRO',
+                    message='selecione um aluno ou insira o codRA'
+                )
+        except Exception as e:
+            self.conn.rollback()
+            messagebox.showerror(
+                title="Erro ao atualizar tabela aluno", message=f'{e}')
+        finally:
+            self.desconecta_bd()
+
+    def add_aluno(self):  # TODO Fazer tudo
+        #  pega a data registrada no entry_data_nasc
+        self.data_string = self.data_nasc
+        #  transforma a data em um datetime
+        self.data_datetime = self.entry_data_nasc.get_date()  # type:ignore
+        # coloca no formato desejado
+        self.data_final = self.data_datetime.strftime("%Y-%m-%d")
+
+        try:
+            querryaluno = """INSERT INTO tbAluno
+                            (codRA, nome, cpf, email,
+                            statusmatricula, data_nasc, codCurso)
+                """
+        except Exception as e:
+            messagebox.showerror(
+                title="Erro carregar tabela telefone", message=f'{e}')
+        finally:
+            self.desconecta_bd()
+
+    def deletar_perfil_aluno(self):
+
+        self.variaveis_aluno()
+        try:
+            self.conecta_bd()
+            msg = messagebox.askyesno(title="Deletar",
+                                      message=f"""VOCÊ TEM CERTEZA QUE QUER DELETAR O ALUNO:
+                                          {self.nome} CodRA = {self.codra}""")
+            if msg is True:
+                self.cursor.execute(
+                    """DELETE FROM tbAluno WHERE codRA = %s """, (self.codra,))
+                self.conn.commit()
+                messagebox.showinfo(title='Deletar',
+                                    message=f"O ALUNO - {self.nome}, codra {self.codra} foi excluido")
+            else:
+                messagebox.showwarning("Deletar",
+                                       "As alterações foram revertidas")
+                self.conn.rollback()
+        except Exception as e:
+            self.conn.rollback()
+            messagebox.showerror(
+                title="Erro ao atualizar tabela", message=f'{e}')
+        finally:
+            self.desconecta_bd()
+            self.apagar_campos_aluno()
+            self.select_listas_aluno()
 
 
 class App(Funcs):
@@ -457,9 +607,9 @@ class App(Funcs):
                                        fg_color='transparent',
                                        border_color='green',
                                        border_width=1,
-                                       command=self.pegar_cpf,
+                                       command=self.pegar_cep,
                                        text='CEP')
-        self.label_cep.place(relx=0.29, rely=0.12, anchor='c')
+        self.label_cep.place(relx=0.29, rely=0.12, anchor='c', relwidth=0.04)
 
         self.entry_cep = ctk.CTkEntry(self.frame_cadastro_aluno,
                                       fg_color='white',
@@ -469,7 +619,7 @@ class App(Funcs):
         self.label_estado = ctk.CTkLabel(self.frame_cadastro_aluno,
                                          text="Estado",
                                          fg_color="transparent")
-        self.label_estado.place(relx=0.29, rely=0.16, anchor='c')
+        self.label_estado.place(relx=0.29, rely=0.16, anchor='c', )
 
         self.entry_estado = ctk.CTkComboBox(self.frame_cadastro_aluno,
                                             fg_color='white',
@@ -529,11 +679,13 @@ class App(Funcs):
         # !SECTION - Labels e Entrys
         # SECTION - Telefone
         # Frame, labels, botões e entradas de telefone
-        self.tel_label = ctk.CTkLabel(self.frame_cadastro_aluno,
-                                      text=("Telefones"),
-                                      fg_color="gray27",
-                                      )
-        self.tel_label.place(relx=0.78, rely=0.1, relwidth=0.1, anchor='c')
+        self.label_telefone = ctk.CTkLabel(self.frame_cadastro_aluno,
+                                           text=("Telefones"),
+                                           fg_color="gray27",
+                                           corner_radius=7
+                                           )
+        self.label_telefone.place(
+            relx=0.78, rely=0.1, relwidth=0.1, anchor='c')
 
         self.frame_tel = ctk.CTkFrame(self.frame_cadastro_aluno,
                                       fg_color='gray27',
@@ -618,9 +770,27 @@ class App(Funcs):
                                             text='apagar')
         self.btn_apagar_tel.place(
             relx=0.89, rely=0.7, relwidth=0.15, anchor='c')
+
+        self.btn_tel_confirmar = ctk.CTkButton(
+            self.frame_cadastro_aluno,
+            text="confirmar"
+        )
+        self.btn_tel_confirmar.place(relx=0.69, rely=0.335, relwidth=0.07)
+
+        self.btn_tel_desfazer = ctk.CTkButton(
+            self.frame_cadastro_aluno,
+            text="desfazer"
+        )
+        self.btn_tel_desfazer.place(relx=0.8, rely=0.335, relwidth=0.07)
+
         # !SECTION - Telefone
         # SECTION - Entry Curso
         # Combobox Curso
+        self.label_curso = ctk.CTkLabel(self.frame_cadastro_aluno,
+                                        text=("curso"),
+                                        fg_color="gray27",
+                                        corner_radius=7)
+        self.label_curso.place(relx=0.78, rely=0.41, relwidth=0.1, anchor='c')
         self.entry_curso = ctk.CTkComboBox(self.frame_cadastro_aluno,
                                            fg_color='white',
                                            text_color='black',
@@ -629,16 +799,16 @@ class App(Funcs):
                                            dropdown_font=("Helvetica", 20),
                                            justify='center')
         self.entry_curso.set('')
-        self.entry_curso.place(relx=0.78, rely=0.4, anchor='c',
+        self.entry_curso.place(relx=0.78, rely=0.45, anchor='c',
                                relwidth=0.3)
         # !SECTION - Entry Curso
         # SECTION - Foto
         # Foto
-        self.foto_label = ctk.CTkLabel(self.frame_cadastro_aluno,
+        self.label_foto = ctk.CTkLabel(self.frame_cadastro_aluno,
                                        text=("Foto"),
                                        fg_color="gray27",
                                        corner_radius=7)
-        self.foto_label.place(relx=0.5, rely=0.105, relwidth=0.1, anchor='c')
+        self.label_foto.place(relx=0.5, rely=0.105, relwidth=0.1, anchor='c')
 
         self.frame_foto = ctk.CTkFrame(self.frame_cadastro_aluno,
                                        fg_color='gray27',
@@ -658,6 +828,34 @@ class App(Funcs):
 
         # SECTION - BTN CRUD
         # Botoes Crud
+        self.btn_excluir = ctk.CTkButton(self.frame_cadastro_aluno,
+                                         text='Excluir',
+                                         border_color='red1',
+                                         border_width=1,
+                                         fg_color='red4',
+                                         text_color='white',
+                                         command=self.deletar_perfil_aluno)
+
+        self.btn_excluir.place(relx=0.12, rely=0.4, relwidth=0.05)
+
+        self.btn_alterar = ctk.CTkButton(self.frame_cadastro_aluno,
+                                         text='Alterar',
+                                         border_color='lightseagreen',
+                                         border_width=1,
+                                         fg_color='gray22',
+                                         text_color='black',
+                                         command=self.alterar_aluno)
+
+        self.btn_alterar.place(relx=0.18, rely=0.4, relwidth=0.05)
+
+        self.btn_novo = ctk.CTkButton(self.frame_cadastro_aluno,
+                                      text='Novo',
+                                      border_color='green4',
+                                      border_width=1,
+                                      fg_color='gray22',
+                                      text_color='black')
+
+        self.btn_novo.place(relx=0.24, rely=0.4, relwidth=0.05)
 
         self.btn_limpar = ctk.CTkButton(self.frame_cadastro_aluno,
                                         text='Limpar',
@@ -667,7 +865,7 @@ class App(Funcs):
                                         text_color='black',
                                         command=self.apagar_campos_aluno)
 
-        self.btn_limpar.place(relx=0.35, rely=0.38, relwidth=0.07)
+        self.btn_limpar.place(relx=0.30, rely=0.4, relwidth=0.05)
 
         self.btn_buscar = ctk.CTkButton(self.frame_cadastro_aluno,
                                         text='Buscar',
@@ -677,34 +875,8 @@ class App(Funcs):
                                         text_color='black',
                                         command=self.buscar_aluno)
 
-        self.btn_buscar.place(relx=0.45, rely=0.38, relwidth=0.07)
+        self.btn_buscar.place(relx=0.36, rely=0.4, relwidth=0.05)
 
-        self.btn_novo = ctk.CTkButton(self.frame_cadastro_aluno,
-                                      text='Novo',
-                                      border_color='green4',
-                                      border_width=1,
-                                      fg_color='gray22',
-                                      text_color='black')
-
-        self.btn_novo.place(relx=0.25, rely=0.38, relwidth=0.07)
-
-        self.btn_alterar = ctk.CTkButton(self.frame_cadastro_aluno,
-                                         text='Alterar',
-                                         border_color='lightseagreen',
-                                         border_width=1,
-                                         fg_color='gray22',
-                                         text_color='black')
-
-        self.btn_alterar.place(relx=0.15, rely=0.38, relwidth=0.07)
-
-        self.btn_excluir = ctk.CTkButton(self.frame_cadastro_aluno,
-                                         text='Excluir',
-                                         border_color='red1',
-                                         border_width=1,
-                                         fg_color='red4',
-                                         text_color='white')
-
-        self.btn_excluir.place(relx=0.05, rely=0.38, relwidth=0.07)
         # !SECTION - BTN CRUD
         # SECTION - Tabela Aluno
         self.lista_alu = ttk.Treeview(
