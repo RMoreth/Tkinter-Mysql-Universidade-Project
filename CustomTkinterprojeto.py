@@ -166,7 +166,6 @@ class Funcs():
             self.entry_data_nasc.set_date(col4)  # type: ignore
             self.entry_email.insert(tk.END, col5)  # type: ignore
             self.entry_curso.set(col7)  # type: ignore
-            # FIXME - PUXAR LISTA DO BANCO DE DADOS
             self.entry_status_matricula.set(col6)  # type: ignore
         try:
             self.conecta_bd()
@@ -388,6 +387,7 @@ class Funcs():
         self.data_final = self.data_datetime.strftime("%Y-%m-%d")
 
         try:
+            # NOTE - verificar cada entry e inserir os dados analogo a busca
             querryaluno = """INSERT INTO tbAluno
                             (codRA, nome, cpf, email,
                             statusmatricula, data_nasc, codCurso)

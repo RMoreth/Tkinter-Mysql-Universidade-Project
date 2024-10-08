@@ -1,17 +1,21 @@
 from mysql.connector import connect, Error
-from typing import Union
+from tkinter import messagebox  # type:ignore
+from typing import Union, Tuple
 
 
 class Controlador_db:
     """
     Classe que controla o acesso ao banco de dados.
 
-    Args:
-        host: STR que indica o Host do Banco de dados
-        user: STR que indica o User do Banco de dados
-        password: STR que indica o password do banco de dados
-        database: STR que indica o nome da base de dados usada 
-    """
+    Attributes:
+        host: STR que indica o Host do Banco de dados.
+        user: STR que indica o User do Banco de dados.
+        password: STR que indica o password do banco de dados.
+        database: STR que indica o nome da base de dados usada.
+        conn: Recebe o objeto de conexão do Mysql Connector.
+        cursor: Recebe o cursor do Mysql Connector.
+        last_id: Recebe o id da ultima tupla(row) modificada caso exista.
+        tuplas_mod: Recebe a quantidade de tuplas(rows) modificadas caso exista. """  # noqa
 
     def __init__(self, host: str, user: str, password: str, database: str) -> None:  # noqa
         self.host = host
@@ -20,9 +24,11 @@ class Controlador_db:
         self.database = database
         self.conn = None
         self.cursor = None
+        self.last_id = None
+        self.tuplas_mod = None
 
     def conecta_bd(self):
-        """Conecta ao banco de dados MYSQL usando os parametros da classe."""
+        """Conecta ao banco de dados MYSQL usando os atributos da classe."""
         self.conn = connect(
             host=self.host,
             user=self.user,
@@ -53,66 +59,69 @@ class Controlador_db:
         finally:
             self.desconecta_bd()
 
-    def executar_querry(self, query: str, params: Union[str, None] = None) -> bool:  # noqa
+    def executar_querry(self, query: str, value: Union[Tuple, None] = None) -> bool:  # noqa
         """
         Executa uma consulta SQL do banco de dados.
 
-        Args: 
-            query: STR que indica a consulta SQL
-            params: Tuple que indica os parametros que serão usados na consulta SQL # noqa
+        Args:
+            query(str): consulta SQL a ser realizada
+            value(Tuple): valores que serão usados na consulta SQL
 
         Returns:
-            True: se a consulta foi efetuada
-            False: se houve alguma falha na consulta
+            bool: False se a consulta falhar e True se não falhar
         """
         self.conecta_bd()
         try:
-            if params:
-                self.cursor.execute(query, params)  # type:ignore
+            if value:
+                self.cursor.execute(query, value)  # type:ignore
             else:
                 self.cursor.execute(query)  # type:ignore
+            self.tuplas_mod = self.cursor.rowcount  # type:ignore
+            self.conn.commit()  # type:ignore
+            print(f'rows affected: {self.tuplas_mod}')
+            self.last_id = self.lastrowid()
             return True
 
         except Error as e:
-            print(f"Error executing query: {e}")
+            messagebox.showerror(title='Error',
+                                 message=f"Error executing query: {e}")
+            self.conn.rollback()  # type:ignore
             return False
         finally:
             self.desconecta_bd
 
-    def consultar_querry(
-                self,
-                tabela: str,
-                colunas: list[str],
-                condicao: Union[str, None] = None,
-                param: Union[str, None] = None
-        ) -> list[str]:  # noqa
+    def consultar_query(
+        self,
+        query,
+        var=None,
+    ):
         """
         Faz uma consulta no banco de dados.
 
-        :args: 
-            tabela: Nome da tabela em que será feita a consulta
-            colunas: Uma lista contendo as colunas que farão parte da consulta
-            condição: termo que vem depois do WHERE em uma consulta SQL caso seja necessario. # noqa
-
-        :returns: uma lista com os resultados da consulta SQL no banco de dados,
+        Args:
+            query: A querry SQL que será executada
+            var: As variaveis inseridas na query caso existam
+        Returns:
+            list:Uma lista com os resultados da consulta SQL no banco de dados,
                     caso a consulta falhe, retornará uma lista vazia
         """
         self.conecta_bd()
         try:
-            colunas_str = ', '.join(colunas) if colunas else '*'
-            query = f""" SELECT {colunas_str} FROM {tabela}"""
-            if condicao:
-                query += f" WHERE {condicao} {param}"
-            self.cursor.execute(query)  # type:ignore
-            resultados = []
-            tamanho = len(colunas)
-            for resultado in self.cursor.fetchmany(tamanho):  # type:ignore
-                resultados.append(str(resultado[0]))  # type:ignore
+            if var is not None:
+                self.cursor.execute(query, var)  # type:ignore
+            else:
+                self.cursor.execute(query)  # type:ignore
+            resultados = self.cursor.fetchall()  # type:ignore
+            print(f'resultados = {resultados}')
             return resultados
         except Error as e:
-            print(query)
             print(f"{e}")
             return []
         finally:
             print(query)
+            print(var)
             self.desconecta_bd()
+
+    def lastrowid(self):
+        last = self.cursor.lastrowid  # type:ignore
+        return last

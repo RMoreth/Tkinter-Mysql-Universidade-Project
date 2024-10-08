@@ -2,11 +2,14 @@ import customtkinter as ctk  # type:ignore
 import tkinter as tk  # type:ignore
 from tkinter import ttk, messagebox  # type:ignore
 from tkcalendar import DateEntry  # type:ignore
+from datetime import datetime
 from db_functions import Controlador_db
 import json
 from typing import Tuple
 
 login = True
+
+# SECTION - Class: App
 
 
 class App(ctk.CTk):
@@ -17,6 +20,7 @@ class App(ctk.CTk):
         title: STR que representa o título da janela.
         size: Tuple com 2 parametros INT que representa
     """
+    # SECTION - INIT
 
     def __init__(self, title: str, size: Tuple[int, int]) -> None:
         # main setup
@@ -50,8 +54,9 @@ class App(ctk.CTk):
 
         # inicializa a tela login
         self.set_login()
+    # !SECTION init
+    # SECTION - Method: Carregar_db_params
 
-    # metodos
     def carregar_db_params(self):
         """Carrega os parametros do banco de dados salvos em db_config.json"""
         try:
@@ -65,6 +70,8 @@ class App(ctk.CTk):
 
         except FileNotFoundError:
             pass
+    # !SECTION - Method: Carregar_db_params
+    # SECTION - Method: Mudar_title
 
     def mudar_title(self, novo: str):
         """
@@ -74,6 +81,8 @@ class App(ctk.CTk):
             title: STR que representa o novo titulo
         """
         self.title(novo)
+    # !SECTION - Method: Mudar_title
+    # SECTION - Method: set_login
 
     def set_login(self):
         """Define a tela principal como a tela Login."""
@@ -82,6 +91,8 @@ class App(ctk.CTk):
 
         self.frame_atual = Login(master=self)
         self.frame_atual.place(relx=0.1, rely=0, relwidth=0.9, relheight=1)
+    # !SECTION - Method: set_login
+    # SECTION - Method: set_cadastro
 
     def set_cadastro(self):
         """Define a tela principal como a tela cadastro."""
@@ -90,6 +101,8 @@ class App(ctk.CTk):
 
         self.frame_atual = Cadastro(master=self)
         self.frame_atual.place(relx=0.1, rely=0, relwidth=0.9, relheight=1)
+    # !SECTION - Method: set_cadastro
+    # SECTION - Method: set_banco_de_dados
 
     def set_banco_de_dados(self):
         """Define a tela principal como a tela banco de dados."""
@@ -98,6 +111,8 @@ class App(ctk.CTk):
 
         self.frame_atual = Banco_de_dados(master=self)
         self.frame_atual.place(relx=0.1, rely=0, relwidth=0.9, relheight=1)
+    # !SECTION - Method: set_banco de dados
+    # SECTION - Method: set_sobre
 
     def set_sobre(self):
         """Define a tela principal como a tela sobre."""
@@ -106,10 +121,15 @@ class App(ctk.CTk):
 
         self.frame_atual = Sobre(master=self)
         self.frame_atual.place(relx=0.1, rely=0, relwidth=0.9, relheight=1)
+    # !SECTION - Method: set_sobre
+# !SECTION app
+
+# SECTION - Class: Menu
 
 
 class Menu(ctk.CTkFrame):
     """Classe que representa o frame que define o menu."""
+    # SECTION - Init
 
     def __init__(self, **kw) -> None:
         super().__init__(**kw)
@@ -119,6 +139,8 @@ class Menu(ctk.CTkFrame):
         self.place(relx=0, rely=0, relwidth=0.1, relheight=1)
         self.create_widgets()
         self.create_layout()
+    # !SECTION - Init
+    # SECTION - Method: create_widgets
 
     def create_widgets(self):
         """Criação dos widgets de menu, é chamado no __init__."""
@@ -133,6 +155,8 @@ class Menu(ctk.CTkFrame):
         if login is not True:
             self.btn_cadastro.configure(state='disabled')
             self.btn_banco_de_dados.configure(state='disabled')
+    # !SECTION - Method: create_widgets
+    # SECTION - Method: create_layout
 
     def create_layout(self):
         """Criação do layout dos widgets de menu, é chamado no __init__."""
@@ -141,35 +165,50 @@ class Menu(ctk.CTkFrame):
         self.btn_cadastro.place(relx=0.5, rely=0.15, anchor='center')
         self.btn_banco_de_dados.place(relx=0.5, rely=0.2, anchor='center')
         self.btn_sobre.place(relx=0.5, rely=0.25, anchor='center')
+    # !SECTION - Method: create_layout
+    # SECTION - Method: abrir_login
 
     def abrir_login(self):
         """Muda a tela principal para a tela Login."""
         self.master.set_login()  # type:ignore
         self.master.mudar_title(novo='Login')  # type:ignore
+    # !SECTION - Method: abrir_login
+    # SECTION - Method: abrir_cadastro
 
     def abrir_cadastro(self):
         """Muda a tela principal para a tela cadastro."""
         self.master.set_cadastro()  # type:ignore
         self.master.mudar_title(novo='Cadastro')  # type:ignore
+    # !SECTION - Method: abrir_cadastro
+    # SECTION - Method: abrir_banco_de_dados
 
     def abrir_banco_de_dados(self):
         """Muda a tela principal para a tela banco de dados."""
         self.master.set_banco_de_dados()  # type:ignore
         self.master.mudar_title(novo='Banco de Dados')  # type:ignore
+    # !SECTION - Method: abrir_banco_de_dados
+    # SECTION - Method: abrir_sobre
 
     def abrir_sobre(self):
         """Muda a tela principal para a tela sobre."""
         self.master.set_sobre()  # type:ignore
         self.master.mudar_title(novo='Sobre')  # type:ignore
+    # !SECTION - Method: abrir_sobre
+# !SECTION - Class: Menu
+
+# SECTION - Class:Login
 
 
 class Login(ctk.CTkFrame):
     """Classe que representa o frame que define o login."""
+    # SECTION - Init
 
     def __init__(self, **kw) -> None:
         super().__init__(**kw)
         self.create_widgets()
         self.create_interface()
+    # !SECTION - Init
+    # SECTION - Method: create_widgets
 
     def create_widgets(self):
         """Criação dos widgets de login, é chamado no __init__."""
@@ -201,6 +240,8 @@ class Login(ctk.CTkFrame):
             text_color='gray10',
             font=('verdana', 20, 'bold'),
         )
+    # !SECTION - Method: create_widgets
+    # SECTION - Method: create_interface
 
     def create_interface(self):
         """Criação da interface dos widgets de login, é chamado no __init__."""
@@ -214,6 +255,9 @@ class Login(ctk.CTkFrame):
         self.usuario_ent.pack(pady=10)
         self.senha_ent.pack(pady=10)
         self.bt_login.pack(pady=50)
+    # !SECTION - Method: create_interface
+# !SECTION - Class: Login
+# SECTION - Class: Label
 
 
 class Label(ctk.CTkLabel):
@@ -230,6 +274,10 @@ class Label(ctk.CTkLabel):
                        fg_color='transparent',
                        font=('Helvetica', 12))
 
+# !SECTION - Class: Label
+
+# SECTION - Class: Entry
+
 
 class Entry(ctk.CTkEntry):
     """Classe que representa uma Entry genérica."""
@@ -238,6 +286,9 @@ class Entry(ctk.CTkEntry):
         super().__init__(**kw)
         self.configure(fg_color="white",
                        text_color='black')
+
+# !SECTION - Class: Entry
+# SECTION - Class: Btn
 
 
 class Btn(ctk.CTkButton):
@@ -254,17 +305,24 @@ class Btn(ctk.CTkButton):
                        border_color='gray13',
                        fg_color='gray67',
                        text=texto,)
+# !SECTION - Class: Btn
+
+# SECTION - Class: Aluno_tab
 
 
 class Aluno_tab(ctk.CTkFrame):
     """Classe que representa o frame que define a Aba Alunos em Cadastro."""
+    # SECTION - Init
 
     def __init__(self, **kw) -> None:
         super().__init__(**kw)
+        self.selecionado = False
         self.pack(fill="both", expand=True)
         self.create_widgets()
         self.create_layout()
         self.montar_lista_alu()
+    # !SECTION - Init
+    # SECTION - Method: create_widgets
 
     def create_widgets(self):
         """Criação dos widgets de Alunotab, é chamado no __init__."""
@@ -352,7 +410,8 @@ class Aluno_tab(ctk.CTkFrame):
                                       border_width=2,
                                       border_color='gray24',
                                       )
-
+        self.lb_sel_alu = Label(
+            'Aluno: Não selecionado', master=self.frame_tel)
         self.lista_tel = ttk.Treeview(
             self.frame_tel,
             height=3,
@@ -365,6 +424,7 @@ class Aluno_tab(ctk.CTkFrame):
         self.lista_tel.column('#0', width=1, minwidth=1, anchor='center')
         self.lista_tel.column('#1', width=20, anchor='center', minwidth=20)
         self.lista_tel.column('#2', width=150, anchor='center', minwidth=150)
+        self.lista_tel.bind("<Double-1>", self.ondoubleclick_alu_tel)
 
         self.scrool_lista_tel = tk.Scrollbar(self.frame_tel,
                                              orient='vertical',
@@ -385,17 +445,18 @@ class Aluno_tab(ctk.CTkFrame):
         self.lb_telefone = Label('Telefone', master=self.frame_tel)
         self.ent_telefone = Entry(master=self.frame_tel)
 
-        self.btn_novo_tel = Btn('Novo', master=self.frame_tel)
-        self.btn_alterar_tel = Btn('Alterar', master=self.frame_tel)
-        self.btn_apagar_tel = Btn('Apagar', master=self.frame_tel)
-        self.btn_confirmar_tel = Btn('Confirmar', master=self)
-        self.btn_desfazer_tel = Btn('Desfazer', master=self)
-
+        self.btn_novo_tel = Btn('Novo',
+                                master=self.frame_tel,
+                                command=self.add_tel_aluno)
+        self.btn_apagar_tel = Btn('Apagar',
+                                  master=self.frame_tel,
+                                  command=self.excluir_tel_alu)
         self.btn_excluir = Btn('Excluir', master=self)
         self.btn_excluir.configure(border_color='red1',
                                    border_width=1,
                                    fg_color='red4',
-                                   text_color='white',)
+                                   text_color='white',
+                                   command=self.excluir_aluno,)
 
         self.btn_alterar = Btn('Alterar', master=self)
         self.btn_alterar.configure(border_color='lightseagreen',
@@ -407,6 +468,7 @@ class Aluno_tab(ctk.CTkFrame):
         self.btn_novo.configure(border_color='green4',
                                 border_width=1,
                                 fg_color='gray22',
+                                command=self.add_aluno,
                                 text_color='black')
 
         self.btn_limpar = Btn('Limpar', master=self)
@@ -420,7 +482,8 @@ class Aluno_tab(ctk.CTkFrame):
         self.btn_buscar.configure(border_color='gray75',
                                   border_width=1,
                                   fg_color='gray22',
-                                  text_color='black',)
+                                  text_color='black',
+                                  command=self.buscar_aluno,)
 
         self.lb_curso = Label('Curso', master=self)
         self.lista_curso = self.montar_lista_cursos()
@@ -462,6 +525,8 @@ class Aluno_tab(ctk.CTkFrame):
                                              command=self.lista_alu.yview)
         self.lista_alu.configure(yscrollcommand=self.scrool_lista_alu.set)
         self.lista_alu.bind("<Double-1>", self.on_doubleclick_aluno)
+    # !SECTION - Method: create_widgets
+    # SECTION - Method: create_layout
 
     def create_layout(self):
         """Criação do layout dos widgets de Alunotab, é chamado no __init__."""
@@ -521,25 +586,23 @@ class Aluno_tab(ctk.CTkFrame):
         self.frame_tel.place(relx=0.78, rely=0.225,
                              relwidth=0.3, relheight=0.2,
                              anchor='c')
-        self.lista_tel.place(relx=0.01, rely=0.03,
-                             relheight=0.94, relwidth=0.45)
+        self.lb_sel_alu.place(relx=0.5, rely=0.06, anchor='c')
+        self.lista_tel.place(relx=0.01, rely=0.13,
+                             relheight=0.85, relwidth=0.45)
         self.scrool_lista_tel.place(
-            relx=0.46, rely=0.03, relheight=0.94, relwidth=0.04)
+            relx=0.46, rely=0.13, relheight=0.85, relwidth=0.04)
 
-        self.lb_prioridade.place(relx=0.53, rely=0.05)
-        self.ent_prioridade.place(relx=0.7, rely=0.05, relwidth=0.12)
+        self.lb_prioridade.place(relx=0.53, rely=0.13)
+        self.ent_prioridade.place(relx=0.7, rely=0.13, relwidth=0.12)
 
-        self.lb_telefone.place(relx=0.53, rely=0.25)
-        self.ent_telefone.place(relx=0.7, rely=0.25, relwidth=0.28)
+        self.lb_telefone.place(relx=0.53, rely=0.34)
+        self.ent_telefone.place(relx=0.7, rely=0.34, relwidth=0.28)
 
         self.btn_novo_tel.place(
-            relx=0.58, rely=0.7, relwidth=0.1, anchor='c')
-        self.btn_alterar_tel.place(
-            relx=0.72, rely=0.7, relwidth=0.15, anchor='c')
+            relx=0.62, rely=0.74, relwidth=0.1, anchor='c')
+
         self.btn_apagar_tel.place(
-            relx=0.89, rely=0.7, relwidth=0.15, anchor='c')
-        self.btn_confirmar_tel.place(relx=0.69, rely=0.335, relwidth=0.07)
-        self.btn_desfazer_tel.place(relx=0.8, rely=0.335, relwidth=0.07)
+            relx=0.79, rely=0.74, relwidth=0.15, anchor='c')
 
         self.btn_excluir.place(relx=0.12, rely=0.4, relwidth=0.05)
         self.btn_alterar.place(relx=0.18, rely=0.4, relwidth=0.05)
@@ -547,14 +610,16 @@ class Aluno_tab(ctk.CTkFrame):
         self.btn_limpar.place(relx=0.30, rely=0.4, relwidth=0.05)
         self.btn_buscar.place(relx=0.36, rely=0.4, relwidth=0.05)
 
-        self.lb_curso.place(relx=0.78, rely=0.41, relwidth=0.1, anchor='c')
-        self.ent_curso.place(relx=0.78, rely=0.45, anchor='c',
+        self.lb_curso.place(relx=0.78, rely=0.38, relwidth=0.1, anchor='c')
+        self.ent_curso.place(relx=0.78, rely=0.41, anchor='c',
                              relwidth=0.3)
 
         self.lista_alu.place(relx=0.08, rely=0.5,
                              relheight=0.5, relwidth=0.82)
         self.scrool_lista_alu.place(
             relx=0.9, rely=0.5, relheight=0.5, relwidth=0.01)
+    # !SECTION - Method: create_layout
+    # SECTION - Method: variaveis_alu
 
     def variaveis_alu(self):
         self.codra = self.ent_codra.get()
@@ -569,6 +634,17 @@ class Aluno_tab(ctk.CTkFrame):
         self.cep = self.ent_cep.get()
         self.logradouro = self.ent_logradouro.get()
         self.numero = self.ent_numero.get()
+        self.data_nasc = self.ent_data_nasc.get()
+        self.prioridade = self.ent_prioridade.get()
+        self.telefone = self.ent_telefone.get()
+        if self.data_nasc:
+            self.data_nasc_obj = datetime.strptime(
+                self.data_nasc, "%d/%m/%Y")
+            self.data_nasc_format = self.data_nasc_obj.strftime("%Y-%m-%d")
+        else:
+            self.data_nasc_format = ""
+    # !SECTION - Method: variaveis_alu
+    # SECTION - Method: montar_lista_alu
 
     def montar_lista_alu(self):
         """Preenche a Treeview lista_alu com as informações do banco de dados."""  # noqa
@@ -586,20 +662,24 @@ class Aluno_tab(ctk.CTkFrame):
                     ON c.codCurso = a.codcurso
                     ORDER BY a.nome;
                     """
-        mainapp.db.executar_querry(querry_lista_alu)
-        lista = mainapp.db.cursor.fetchall()
+
+        lista = mainapp.db.consultar_query(querry_lista_alu)
 
         for i in lista:
-            self.lista_alu.insert("", tk.END, values=i)
+            self.lista_alu.insert("", tk.END, values=i)  # type:ignore
+    # !SECTION - Method: montar_lista_alu
+    # SECTION - Method: montar_lista_cursos
 
     def montar_lista_cursos(self) -> list:
         """Recupera as informações de Cursos do banco de dados para ser usada na Combobox ent_curso."""  # noqa
-
-        resultado = mainapp.db.consultar_querry(
-            tabela='tbCurso',
-            colunas=['nome']
-        )
+        resultado = []
+        query = "SELECT nome FROM tbCurso"
+        consulta = mainapp.db.consultar_query(query=query)
+        for row in consulta:
+            resultado.append(row[0])  # type:ignore
         return resultado
+    # !SECTION - Method: montar_lista_cursos
+    # SECTION - Method: apagar_campos_aluno
 
     def apagar_campos_aluno(self):
         """Apaga os caracteres inseridos nas entrys de Alunotab."""
@@ -620,6 +700,18 @@ class Aluno_tab(ctk.CTkFrame):
         self.ent_telefone.delete('0', tk.END)  # type: ignore
         self.ent_prioridade.set('')  # type: ignore
 
+        self.lista_tel.delete(*self.lista_tel.get_children())
+        self.lb_sel_alu.configure(
+            text='Aluno: não selecionado', fg_color='red')
+    # !SECTION - Method: apagar_campos_aluno
+    # SECTION - Method: Apagar_campos_tel
+
+    def apagar_campos_tel(self):
+        self.ent_telefone.delete('0', tk.END)
+        self.ent_prioridade.set('')
+    # !SECTION - Method: Apagar_campos_tel
+    # SECTION - Method: on_doubleclick_aluno
+
     def on_doubleclick_aluno(self, event):
         """
         Evento acionado com duplo clique em uma linha da treeview lista_alu,
@@ -632,39 +724,36 @@ class Aluno_tab(ctk.CTkFrame):
             col1, col2, col3, col4, col5, col6, col7 = self.lista_alu.item(  # noqa # type: ignore
                 n, 'values')
 
-            self.ent_codra.insert(tk.END, col1)  # type: ignore
-            self.ent_nome.insert(tk.END, col2)  # type: ignore
-            self.ent_cpf.insert(tk.END, col3)  # type: ignore
+            self.ent_codra.insert(tk.END, col1)
+            self.ent_nome.insert(tk.END, col2)
+            self.ent_cpf.insert(tk.END, col3)
             self.ent_data_nasc.set_date(col4)  # type: ignore
             self.ent_email.insert(tk.END, col5)  # type: ignore
             self.ent_curso.set(col7)  # type: ignore
-            # FIXME - PUXAR LISTA DO BANCO DE DADOS
             self.ent_status_matricula.set(col6)  # type: ignore
         self.variaveis_alu()
-
-        self.result = mainapp.db.consultar_querry(
-            'tbAluno', ['codEndereco '], 'codRa = ', str(self.codra))
-
-        self.codendereco = str(self.result[0])
-
-        colunas = ['cep', 'estado', 'cidade', 'bairro', 'logradouro', 'numero']
-        where = 'codEndereco = '
+        query = "SELECT codEndereco FROM tbAluno WHERE codra = %s"
+        self.result = mainapp.db.consultar_query(
+            query=query, var=(self.codra, ))
+        self.codendereco = str(self.result[0][0])  # type:ignore
+        queryend = """
+                SELECT cep, estado, cidade, bairro, logradouro, numero
+                FROM tbEndereco
+                WHERE codEndereco = %s
+        """
         self.result_list = []
-        self.result_list = mainapp.db.consultar_querry(
-            'tbEndereco', colunas=colunas, condicao=where, param=str(self.codendereco))
+        self.result_list = mainapp.db.consultar_query(
+            queryend, (self.codendereco, ))
         self.campos_endereco = self.result_list
-        print(f'codra = {self.codra}')
-        print(f'codendereco = {self.codendereco}')
-        print(f'campos endereco = {self.campos_endereco}')
 
-        for v in self.campos_endereco:
-            c = 0
+        c = 0
+        for v in self.campos_endereco[0]:
             match c:
                 case 0:
                     self.ent_cep.insert(tk.END, v)
                     c += 1
                 case 1:
-                    self.ent_estado.set(v)
+                    self.ent_estado.set(str(v))
                     c += 1
                 case 2:
                     self.ent_cidade.insert(tk.END, v)
@@ -678,14 +767,309 @@ class Aluno_tab(ctk.CTkFrame):
                 case 5:
                     self.ent_numero.insert(tk.END, v)
 
+        self.montar_lista_tel(col1)
+    # !SECTION - Method: on_doubleclick_aluno
+    # SECTION - Method: montar_lista_tel
+
+    def montar_lista_tel(self, ra):
+        self.lista_tel.delete(*self.lista_tel.get_children())
+
+        self.lb_sel_alu.configure(text=f'Aluno: {self.nome}', fg_color='green')
+
+        querytel = """SELECT t.prioridade, t.numero
+                        FROM tbtelefone t
+                        JOIN tbAluno_has_tbtelefone aht
+                        ON t.codtelefone = aht.codtelefone
+                        JOIN tbaluno a ON aht.codra = a.codra
+                        where a.codra = %s
+                        ORDER BY t.prioridade ;
+                        """
+
+        self.lista_tel_result = mainapp.db.consultar_query(
+            querytel, (ra,)
+        )
+
+        for i in self.lista_tel_result:
+            self.lista_tel.insert(
+                "", tk.END, values=(i[0], i[1]))  # type:ignore
+    # !SECTION - Method: montar_lista_tel
+    # SECTION - Method: buscar_aluno
+
+    def buscar_aluno(self):
+        self.variaveis_alu()
+
+        querrybusca = """
+                SELECT a.codRA,
+                a.nome,
+                a.cpf,
+                date_format(a.data_nasc, '%d/%m/%Y'),
+                a.email,
+                a.statusmatricula,
+                c.nome
+                FROM tbaluno a
+                JOIN tbCurso c
+                ON a.codCurso = c.codCurso
+                JOIN tbEndereco e
+                ON e.codEndereco = a.codEndereco
+            """
+        where = []
+        values = []
+
+        if self.codra:
+            where.append("a.codRA = %s")
+            values.append(self.codra)
+        if self.nome:
+            where.append("a.nome LIKE %s")
+            values.append(f'%{self.nome}%')
+        if self.cpf:
+            where.append("a.cpf LIKE %s")
+            values.append(f'%{self.cpf}%')
+        if self.data_nasc_format:
+            where.append("a.data_nasc LIKE %s")
+            values.append(f"{self.data_nasc_format}")
+        if self.email:
+            where.append("a.email LIKE %s")
+            values.append(f'%{self.email}%')
+        if self.status_matricula:
+            where.append("a.statusmatricula LIKE %s")
+            values.append(self.status_matricula)
+        if self.curso:
+            where.append("c.nome LIKE %s")
+            values.append(f'%{self.curso}%')
+        if self.cep:
+            where.append("e.cep LIKE %s")
+            values.append(f'%{self.cep}%')
+        if self.estado:
+            where.append("e.estado LIKE %s")
+            values.append(self.estado)
+        if self.cidade:
+            where.append("e.cidade LIKE %s")
+            values.append(f'%{self.cidade}%')
+        if self.bairro:
+            where.append("e.bairro LIKE %s")
+            values.append(f"%{self.bairro}%")
+        if self.logradouro:
+            where.append("e.logradouro LIKE %s")
+            values.append(f"%{self.logradouro}%")
+        if self.numero:
+            where.append("e.numero LIKE %s")
+            values.append(f"%{self.numero}%")
+
+        if where:
+            querrybusca += " WHERE " + " AND ".join(where)
+            querrybusca += " ORDER BY a.nome ;"
+
+        self.lista_alu_busca = mainapp.db.consultar_query(querrybusca, values)
+
+        self.lista_alu.delete(*self.lista_alu.get_children())
+        for i in self.lista_alu_busca:
+            self.lista_alu.insert("", tk.END, values=(i))  # type:ignore
+    # !SECTION - Method: buscar_aluno
+    # SECTION - Method: add_aluno
+
+    def add_aluno(self):
+        """
+        Adiciona os dados de um novo aluno no banco de dados
+        """
+        self.variaveis_alu()
+        lista_campos = []
+        if not self.nome:
+            lista_campos.append("nome")
+        if not self.cpf:
+            lista_campos.append("cpf")
+        if not self.email:
+            lista_campos.append("email")
+        if not self.status_matricula:
+            lista_campos.append("status da matricula")
+        if not self.data_nasc:
+            lista_campos.append("data de Nascimento")
+        if not self.cep:
+            lista_campos.append("cep")
+        if not self.estado:
+            lista_campos.append("estado")
+        if not self.cidade:
+            lista_campos.append("cidade")
+        if not self.bairro:
+            lista_campos.append("bairro")
+        if not self.logradouro:
+            lista_campos.append("logradouro")
+        if not self.numero:
+            lista_campos.append("número")
+        if not self.curso:
+            lista_campos.append("Curso")
+
+        if lista_campos:
+            messagebox.showerror(title='campos invalidos',
+                                 message=f"Os campos {lista_campos}, são obrigatórios")  # noqa
+        else:
+
+            querry_end = """
+                INSERT INTO tbEndereco (cep, estado, cidade, bairro,
+                logradouro, numero)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                        """
+            mainapp.db.executar_querry(querry_end,
+                                       (self.cep, self.estado, self.cidade,
+                                        self.bairro, self.logradouro,
+                                        self.numero))
+            lastcodend = mainapp.db.last_id
+
+            querry_codcurso = """
+                SELECT codCurso FROM tbCurso WHERE nome like %s
+                            """
+            codcurso = mainapp.db.consultar_query(
+                querry_codcurso, (f'%{self.curso}%', ))[0][0]  # type: ignore
+
+            querry_add = """
+            INSERT INTO tbaluno (nome, cpf, email, statusmatricula,
+            data_nasc, codendereco, codcurso)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+
+            mainapp.db.executar_querry(querry_add,
+                                       (self.nome, self.cpf, self.email,
+                                        self.status_matricula,
+                                        self.data_nasc_format,
+                                        lastcodend, codcurso))
+            messagebox.showinfo(
+                title='Sucesso',
+                message=f'Aluno {self.nome} foi adicionado com sucesso.'
+            )
+        # TODO - fazer aparecer apenas o aluno adicionado ao final
+        self.montar_lista_alu()
+
+    # !SECTION - Method: add_aluno
+    # SECTION - Method: excluir_aluno
+
+    def excluir_aluno(self):
+        self.variaveis_alu()
+        if self.codra:
+            msg = messagebox.askyesno(
+                title="Deletar",
+                message=f"""VOCÊ TEM CERTEZA QUE QUER DELETAR O ALUNO:
+                                          {self.nome} CodRA = {self.codra}""")
+            if msg is True:
+
+                querry_del = """
+                DELETE from tbaluno WHERE codra = %s
+                """
+                mainapp.db.executar_querry(querry_del, (self.codra,))
+                self.montar_lista_alu()
+                messagebox.showinfo(
+                    title='Sucesso',
+                    message=f'Aluno {self.nome} apagado com sucesso'
+                )
+            else:
+                messagebox.showerror(
+                    title="ERRO",
+                    message=f'CodRA: {self.codra} NÃO foi excluido ')
+        else:
+            messagebox.showwarning(
+                title="Deletar",
+                message="CodRA não selecionado")
+
+    # !SECTION - Method: excluir_aluno
+    # SECTION - Method: add_tel_aluno
+    def add_tel_aluno(self):
+        self.variaveis_alu()
+
+        if not self.codra:
+            msg = """
+                    Não há CodRA selecionado,
+                    Verifique o campo CodRA e tente novamente"""
+            messagebox.showerror(
+                title='ERRO',
+                message=f'{msg}'
+            )
+        else:
+            querrytel = """
+                        INSERT INTO tbTelefone
+                        (numero, prioridade)
+                        VALUES (%s, %s)"""
+            values = (self.telefone, self.prioridade)
+
+            mainapp.db.executar_querry(query=querrytel,
+                                       value=values)
+
+            codTel = mainapp.db.last_id
+
+            querryaht = """
+                        INSERT INTO tbAluno_has_tbTelefone
+                        (codRa, codTelefone)
+                        VALUES (%s, %s)"""
+            valuesaht = (self.codra, codTel)
+
+            mainapp.db.executar_querry(query=querryaht,
+                                       value=valuesaht)
+            self.montar_lista_tel(self.codra)
+            messagebox.showinfo(
+                title='Sucesso',
+                message=f"""O numero {self.telefone},
+                foi adicionado ao aluno {self.nome} """
+            )
+    # !SECTION - Method: add_tel_aluno
+    # SECTION - Method: ondoubleclick_alu_tel
+
+    def ondoubleclick_alu_tel(self, event):
+        self.apagar_campos_tel()
+        self.lista_tel.selection()
+        for n in self.lista_tel.selection():
+            col1, col2 = self.lista_tel.item(
+                n, 'values'
+            )
+            self.ent_prioridade.set(col1)
+            self.ent_telefone.insert(tk.END, col2)
+    # !SECTION - Method: ondoubleclick_alu_tel
+
+    # SECTION - Method: excluir_tel_alu
+    def excluir_tel_alu(self):
+        self.variaveis_alu()
+        if self.telefone:
+            querry_select = """
+                        SELECT t.codTelefone FROM tbTelefone t
+                        JOIN tbAluno_has_tbTelefone aht
+                        ON aht.codTelefone = t.codTelefone
+                        WHERE aht.codRa = %s AND t.numero = %s"""
+            values = (self.codra, self.telefone)
+            resultado = mainapp.db.consultar_query(querry_select, values)[0]
+            print(resultado)
+            querry_del = """
+                    DELETE FROM tbTelefone WHERE codTelefone = %s"""
+
+            executar = mainapp.db.executar_querry(
+                querry_del, resultado)  # type: ignore
+            if executar is True:
+                messagebox.showinfo(
+                    title='Sucesso',
+                    message=f'Telefone: {self.telefone} apagado com sucesso'
+                )
+                self.montar_lista_tel(self.codra)
+            else:
+                messagebox.showerror(
+                    title="ERRO",
+                    message="O telefone não pode ser apagado"
+            )
+        else:
+            messagebox.showerror(
+                    title="ERRO",
+                    message="Selecione ou digite um numero de telefone"
+            )
+    # !SECTION - Method: excluir_tel_alu
+# !SECTION - Class: Aluno_tab
+
+# SECTION - Class: Cadastro
+
 
 class Cadastro(ctk.CTkFrame):
     """Classe que representa o frame que define Cadastro."""
+    # SECTION - Init
 
     def __init__(self, **kw) -> None:
         super().__init__(**kw)
         self.create_widgets()
         self.create_layout()
+    # !SECTION - Init
+    # SECTION - Method: create_widgets
 
     def create_widgets(self):
         """Criação dos widgets de Cadastro, é chamado no __init__."""
@@ -697,6 +1081,8 @@ class Cadastro(ctk.CTkFrame):
         self.discitab = self.cadastro_tree.add("Disciplina")
         self.turmatab = self.cadastro_tree.add("Turma")
         self.frame_aluno = Aluno_tab(master=self.alunotab)
+    # !SECTION - Method: create_widgets
+    # SECTION - Method: create_layout
 
     def create_layout(self):
         """Criação do layout dos widgets de Cadastro, é chamado no __init__."""
@@ -704,10 +1090,15 @@ class Cadastro(ctk.CTkFrame):
         self.cadastro_tree.place(relx=0.02, rely=0.01,
                                  relwidth=0.96, relheight=0.95)
         self.frame_aluno.pack()
+    # !SECTION - Method: create_layout
+# !SECTION - Class: Cadastro
+
+# SECTION - Class: Banco_de_dados
 
 
 class Banco_de_dados(ctk.CTkFrame):
     """Classe que representa o frame que define a tela Banco de Dados."""
+    # SECTION - Init
 
     def __init__(self, **kw) -> None:
         super().__init__(**kw)
@@ -715,9 +1106,11 @@ class Banco_de_dados(ctk.CTkFrame):
 
         self.create_widgets()
         self.create_layout()
+    # !SECTION - Init
+    # SECTION - Method: create_widgets
 
     def create_widgets(self):
-        """Criação dos widgets da tela Banco de dados, é chamado no __init__."""
+        """Criação dos widgets da tela Banco de dados, é chamado no __init__."""  # noqa
 
         self.frame_bd = ctk.CTkFrame(self,
                                      fg_color='gray24',
@@ -741,6 +1134,8 @@ class Banco_de_dados(ctk.CTkFrame):
         self.frame_bd_mysql = ctk.CTkFrame(self.frame_bd,
                                            fg_color='grey',
                                            border_width=2)
+    # !SECTION - Method: create_widgets
+    # SECTION - Method: create_sub_widgets
 
     def create_sub_widgets(self, tipo: str):
         """
@@ -814,11 +1209,15 @@ class Banco_de_dados(ctk.CTkFrame):
             self.lb_default = Label('Selecione uma opção',
                                     master=self.frame_bd_mysql)
             self.lb_default.pack()
+    # !SECTION - Method: create_sub_widgets
+    # SECTION - Method: att_frame_bd_sub
 
     def att_frame_bd_sub(self, var, index, mode):
         """TODO: entender para fazer DocSting"""
         self.tipo = self.ent_tipo_bd.get()
         self.create_sub_widgets(self.tipo)
+    # !SECTION - Method: att_frame_bd_sub
+    # SECTION - Method: create_layout
 
     def create_layout(self):
         """Criação do layout dos widgets da tela Banco de dados, é chamado no __init__."""  # noqa
@@ -835,6 +1234,8 @@ class Banco_de_dados(ctk.CTkFrame):
 
         self.frame_bd_mysql.place(relx=0.15, rely=0.3,
                                   relwidth=0.7, relheight=0.6,)
+    # !SECTION Method: create_layout
+    # SECTION - Method: salvar_params
 
     def salvar_params(self):
         """Salva os parametros do Banco de dados em no arquivo db_config.json."""  # noqa
@@ -854,6 +1255,9 @@ class Banco_de_dados(ctk.CTkFrame):
         except Exception as e:
             messagebox.showerror(
                 title="Erro ao salvar as configurações", message=f'{e}')
+    # !SECTION - Method: salvar_params
+# !SECTION - Class: Banco de dados
+# SECTION - Class: Sobre
 
 
 class Sobre(ctk.CTkFrame):
@@ -863,6 +1267,8 @@ class Sobre(ctk.CTkFrame):
         super().__init__(**kw)
         lb = ctk.CTkLabel(self, text="Sobre")
         lb.pack(expand=True, fill='both', padx=20, pady=20)
+# !SECTION - class: Sobre
+# SECTION - class: DataBase
 
 
 class DataBase(Controlador_db):
@@ -882,6 +1288,7 @@ class DataBase(Controlador_db):
         self.user = user
         self.password = password
         self.database = database
+# !SECTION - class: DataBase
 
 
 if __name__ == '__main__':
