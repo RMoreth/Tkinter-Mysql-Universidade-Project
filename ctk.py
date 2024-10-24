@@ -9,8 +9,6 @@ from typing import Tuple
 
 login = True
 
-# SECTION - Class: App
-
 
 class App(ctk.CTk):
     """
@@ -20,7 +18,6 @@ class App(ctk.CTk):
         title: STR que representa o título da janela.
         size: Tuple com 2 parametros INT que representa
     """
-    # SECTION - INIT
 
     def __init__(self, title: str, size: Tuple[int, int]) -> None:
         # main setup
@@ -54,8 +51,6 @@ class App(ctk.CTk):
 
         # inicializa a tela login
         self.set_login()
-    # !SECTION init
-    # SECTION - Method: Carregar_db_params
 
     def carregar_db_params(self):
         """Carrega os parametros do banco de dados salvos em db_config.json"""
@@ -70,8 +65,6 @@ class App(ctk.CTk):
 
         except FileNotFoundError:
             pass
-    # !SECTION - Method: Carregar_db_params
-    # SECTION - Method: Mudar_title
 
     def mudar_title(self, novo: str):
         """
@@ -81,8 +74,6 @@ class App(ctk.CTk):
             title: STR que representa o novo titulo
         """
         self.title(novo)
-    # !SECTION - Method: Mudar_title
-    # SECTION - Method: set_login
 
     def set_login(self):
         """Define a tela principal como a tela Login."""
@@ -91,8 +82,6 @@ class App(ctk.CTk):
 
         self.frame_atual = Login(master=self)
         self.frame_atual.place(relx=0.1, rely=0, relwidth=0.9, relheight=1)
-    # !SECTION - Method: set_login
-    # SECTION - Method: set_cadastro
 
     def set_cadastro(self):
         """Define a tela principal como a tela cadastro."""
@@ -101,8 +90,6 @@ class App(ctk.CTk):
 
         self.frame_atual = Cadastro(master=self)
         self.frame_atual.place(relx=0.1, rely=0, relwidth=0.9, relheight=1)
-    # !SECTION - Method: set_cadastro
-    # SECTION - Method: set_banco_de_dados
 
     def set_banco_de_dados(self):
         """Define a tela principal como a tela banco de dados."""
@@ -111,8 +98,6 @@ class App(ctk.CTk):
 
         self.frame_atual = Banco_de_dados(master=self)
         self.frame_atual.place(relx=0.1, rely=0, relwidth=0.9, relheight=1)
-    # !SECTION - Method: set_banco de dados
-    # SECTION - Method: set_sobre
 
     def set_sobre(self):
         """Define a tela principal como a tela sobre."""
@@ -121,15 +106,10 @@ class App(ctk.CTk):
 
         self.frame_atual = Sobre(master=self)
         self.frame_atual.place(relx=0.1, rely=0, relwidth=0.9, relheight=1)
-    # !SECTION - Method: set_sobre
-# !SECTION app
-
-# SECTION - Class: Menu
 
 
 class Menu(ctk.CTkFrame):
     """Classe que representa o frame que define o menu."""
-    # SECTION - Init
 
     def __init__(self, **kw) -> None:
         super().__init__(**kw)
@@ -139,8 +119,6 @@ class Menu(ctk.CTkFrame):
         self.place(relx=0, rely=0, relwidth=0.1, relheight=1)
         self.create_widgets()
         self.create_layout()
-    # !SECTION - Init
-    # SECTION - Method: create_widgets
 
     def create_widgets(self):
         """Criação dos widgets de menu, é chamado no __init__."""
@@ -155,8 +133,6 @@ class Menu(ctk.CTkFrame):
         if login is not True:
             self.btn_cadastro.configure(state='disabled')
             self.btn_banco_de_dados.configure(state='disabled')
-    # !SECTION - Method: create_widgets
-    # SECTION - Method: create_layout
 
     def create_layout(self):
         """Criação do layout dos widgets de menu, é chamado no __init__."""
@@ -165,50 +141,35 @@ class Menu(ctk.CTkFrame):
         self.btn_cadastro.place(relx=0.5, rely=0.15, anchor='center')
         self.btn_banco_de_dados.place(relx=0.5, rely=0.2, anchor='center')
         self.btn_sobre.place(relx=0.5, rely=0.25, anchor='center')
-    # !SECTION - Method: create_layout
-    # SECTION - Method: abrir_login
 
     def abrir_login(self):
         """Muda a tela principal para a tela Login."""
         self.master.set_login()  # type:ignore
         self.master.mudar_title(novo='Login')  # type:ignore
-    # !SECTION - Method: abrir_login
-    # SECTION - Method: abrir_cadastro
 
     def abrir_cadastro(self):
         """Muda a tela principal para a tela cadastro."""
         self.master.set_cadastro()  # type:ignore
         self.master.mudar_title(novo='Cadastro')  # type:ignore
-    # !SECTION - Method: abrir_cadastro
-    # SECTION - Method: abrir_banco_de_dados
 
     def abrir_banco_de_dados(self):
         """Muda a tela principal para a tela banco de dados."""
         self.master.set_banco_de_dados()  # type:ignore
         self.master.mudar_title(novo='Banco de Dados')  # type:ignore
-    # !SECTION - Method: abrir_banco_de_dados
-    # SECTION - Method: abrir_sobre
 
     def abrir_sobre(self):
         """Muda a tela principal para a tela sobre."""
         self.master.set_sobre()  # type:ignore
         self.master.mudar_title(novo='Sobre')  # type:ignore
-    # !SECTION - Method: abrir_sobre
-# !SECTION - Class: Menu
-
-# SECTION - Class:Login
 
 
 class Login(ctk.CTkFrame):
     """Classe que representa o frame que define o login."""
-    # SECTION - Init
 
     def __init__(self, **kw) -> None:
         super().__init__(**kw)
         self.create_widgets()
         self.create_interface()
-    # !SECTION - Init
-    # SECTION - Method: create_widgets
 
     def create_widgets(self):
         """Criação dos widgets de login, é chamado no __init__."""
@@ -240,8 +201,6 @@ class Login(ctk.CTkFrame):
             text_color='gray10',
             font=('verdana', 20, 'bold'),
         )
-    # !SECTION - Method: create_widgets
-    # SECTION - Method: create_interface
 
     def create_interface(self):
         """Criação da interface dos widgets de login, é chamado no __init__."""
@@ -255,9 +214,6 @@ class Login(ctk.CTkFrame):
         self.usuario_ent.pack(pady=10)
         self.senha_ent.pack(pady=10)
         self.bt_login.pack(pady=50)
-    # !SECTION - Method: create_interface
-# !SECTION - Class: Login
-# SECTION - Class: Label
 
 
 class Label(ctk.CTkLabel):
@@ -274,10 +230,6 @@ class Label(ctk.CTkLabel):
                        fg_color='transparent',
                        font=('Helvetica', 12))
 
-# !SECTION - Class: Label
-
-# SECTION - Class: Entry
-
 
 class Entry(ctk.CTkEntry):
     """Classe que representa uma Entry genérica."""
@@ -286,9 +238,6 @@ class Entry(ctk.CTkEntry):
         super().__init__(**kw)
         self.configure(fg_color="white",
                        text_color='black')
-
-# !SECTION - Class: Entry
-# SECTION - Class: Btn
 
 
 class Btn(ctk.CTkButton):
@@ -305,7 +254,6 @@ class Btn(ctk.CTkButton):
                        border_color='gray13',
                        fg_color='gray67',
                        text=texto,)
-# !SECTION - Class: Btn
 
 
 class Top_level(ctk.CTkToplevel):
@@ -314,12 +262,10 @@ class Top_level(ctk.CTkToplevel):
         self.geometry('400x200')
         self.focus_set()
         self.grab_set()
-# SECTION - Class: Aluno_tab
 
 
 class Aluno_tab(ctk.CTkFrame):
     """Classe que representa o frame que define a Aba Alunos em Cadastro."""
-    # SECTION - Init
 
     def __init__(self, **kw) -> None:
         super().__init__(**kw)
@@ -328,8 +274,6 @@ class Aluno_tab(ctk.CTkFrame):
         self.create_widgets()
         self.create_layout()
         self.montar_lista_alu()
-    # !SECTION - Init
-    # SECTION - Method: create_widgets
 
     def create_widgets(self):
         """Criação dos widgets de Alunotab, é chamado no __init__."""
@@ -534,9 +478,6 @@ class Aluno_tab(ctk.CTkFrame):
         self.lista_alu.configure(yscrollcommand=self.scrool_lista_alu.set)
         self.lista_alu.bind("<Double-1>", self.on_doubleclick_aluno)
 
-    # !SECTION - Method: create_widgets
-    # SECTION - Method: create_layout
-
     def create_layout(self):
         """Criação do layout dos widgets de Alunotab, é chamado no __init__."""
 
@@ -628,9 +569,6 @@ class Aluno_tab(ctk.CTkFrame):
         self.scrool_lista_alu.place(
             relx=0.9, rely=0.5, relheight=0.5, relwidth=0.01)
 
-    # !SECTION - Method: create_layout
-    # SECTION - Method: variaveis_alu
-
     def variaveis_alu(self):
         self.codra = self.ent_codra.get()
         self.nome = self.ent_nome.get()
@@ -653,8 +591,6 @@ class Aluno_tab(ctk.CTkFrame):
             self.data_nasc_format = self.data_nasc_obj.strftime("%Y-%m-%d")
         else:
             self.data_nasc_format = ""
-    # !SECTION - Method: variaveis_alu
-    # SECTION - Method: montar_lista_alu
 
     def montar_lista_alu(self):
         """Preenche a Treeview lista_alu com as informações do banco de dados."""  # noqa
@@ -678,9 +614,6 @@ class Aluno_tab(ctk.CTkFrame):
         for i in lista:
             self.lista_alu.insert("", tk.END, values=i)  # type:ignore
 
-    # !SECTION - Method: montar_lista_alu
-    # SECTION - Method: montar_lista_cursos
-
     def montar_lista_cursos(self) -> list:
         """Recupera as informações de Cursos do banco de dados para ser usada na Combobox ent_curso."""  # noqa
         resultado = []
@@ -689,8 +622,6 @@ class Aluno_tab(ctk.CTkFrame):
         for row in consulta:
             resultado.append(row[0])  # type:ignore
         return resultado
-    # !SECTION - Method: montar_lista_cursos
-    # SECTION - Method: apagar_campos_aluno
 
     def apagar_campos_aluno(self):
         """Apaga os caracteres inseridos nas entrys de Alunotab."""
@@ -714,14 +645,10 @@ class Aluno_tab(ctk.CTkFrame):
         self.lista_tel.delete(*self.lista_tel.get_children())
         self.lb_sel_alu.configure(
             text='Aluno: não selecionado', fg_color='red')
-    # !SECTION - Method: apagar_campos_aluno
-    # SECTION - Method: Apagar_campos_tel
 
     def apagar_campos_tel(self):
         self.ent_telefone.delete('0', tk.END)
         self.ent_prioridade.set('')
-    # !SECTION - Method: Apagar_campos_tel
-    # SECTION - Method: on_doubleclick_aluno
 
     def on_doubleclick_aluno(self, event):
         """
@@ -780,9 +707,6 @@ class Aluno_tab(ctk.CTkFrame):
 
         self.montar_lista_tel(col1)
 
-    # !SECTION - Method: on_doubleclick_aluno
-    # SECTION - Method: montar_lista_tel
-
     def montar_lista_tel(self, ra):
         self.lista_tel.delete(*self.lista_tel.get_children())
 
@@ -806,8 +730,6 @@ class Aluno_tab(ctk.CTkFrame):
         for i in self.lista_tel_result:
             self.lista_tel.insert(
                 "", tk.END, values=(i[0], i[1]))  # type:ignore
-    # !SECTION - Method: montar_lista_tel
-    # SECTION - Method: buscar_aluno
 
     def buscar_aluno(self):
         self.variaveis_alu()
@@ -883,8 +805,6 @@ class Aluno_tab(ctk.CTkFrame):
 
         for i in self.lista_alu_busca:
             self.lista_alu.insert("", tk.END, values=(i))  # type:ignore
-    # !SECTION - Method: buscar_aluno
-    # SECTION - Method: add_aluno
 
     def add_aluno(self):
         """
@@ -957,9 +877,6 @@ class Aluno_tab(ctk.CTkFrame):
         # TODO - fazer aparecer apenas o aluno adicionado ao final
         self.montar_lista_alu()
 
-    # !SECTION - Method: add_aluno
-    # SECTION - Method: excluir_aluno
-
     def excluir_aluno(self):
         self.variaveis_alu()
         if self.codra:
@@ -987,8 +904,6 @@ class Aluno_tab(ctk.CTkFrame):
                 title="Deletar",
                 message="CodRA não selecionado")
 
-    # !SECTION - Method: excluir_aluno
-    # SECTION - Method: add_tel_aluno
     def add_tel_aluno(self):
         self.variaveis_alu()
 
@@ -1026,8 +941,6 @@ class Aluno_tab(ctk.CTkFrame):
                 message=f"""O numero {self.telefone},
                 foi adicionado ao aluno {self.nome} """
             )
-    # !SECTION - Method: add_tel_aluno
-    # SECTION - Method: ondoubleclick_alu_tel
 
     def ondoubleclick_alu_tel(self, event):
         self.apagar_campos_tel()
@@ -1038,7 +951,6 @@ class Aluno_tab(ctk.CTkFrame):
             )
             self.ent_prioridade.set(col1)
             self.ent_telefone.insert(tk.END, col2)
-    # !SECTION - Method: ondoubleclick_alu_tel
 
     def alterar_alu(self):
         self.variaveis_alu()
@@ -1135,8 +1047,6 @@ class Aluno_tab(ctk.CTkFrame):
         self.montar_lista_alu()
         # TODO - Terminar usando a funcao nova
 
-    # SECTION - Method: excluir_tel_alu
-
     def excluir_tel_alu(self):
         self.variaveis_alu()
         if self.telefone:
@@ -1169,8 +1079,6 @@ class Aluno_tab(ctk.CTkFrame):
                 title="ERRO",
                 message="Selecione ou digite um numero de telefone"
             )
-    # !SECTION - Method: excluir_tel_alu
-# !SECTION - Class: Aluno_tab
 
 
 class Professor_tab(ctk.CTkFrame):
@@ -1372,7 +1280,9 @@ class Professor_tab(ctk.CTkFrame):
         self.lista_disciplina.configure(
             yscrollcommand=self.scrool_lista_disciplina.set)
 
-        self.btn_excluir_disc = Btn('Excluir', master=self)
+        self.btn_excluir_disc = Btn('Excluir',
+                                    master=self,
+                                    command=self.excluir_disc_toplevel)
         self.btn_adicionar_disc = Btn('Adicionar',
                                       master=self,
                                       command=self.add_disc_toplevel)
@@ -2009,18 +1919,25 @@ class Professor_tab(ctk.CTkFrame):
                 message="Selecione ou digite um numero de telefone"
             )
 
-    def lista_prof_disc(self, codprof):
-        query = """SELECT d.codDisciplina, d.nome
+    def lista_prof_disc(self, codprof, equal):
+        if equal:
+            termo = "="
+        else:
+            termo = "!="
+        query = f"""SELECT d.codDisciplina, d.nome
                 FROM tbDisciplina d
                 JOIN tbProfessor_has_tbDisciplina phd
                 ON d.codDisciplina = phd.codDisciplina
-                WHERE codProfessor != %s
+                WHERE codProfessor {termo} %s
                 ORDER BY d.codDisciplina"""
 
         resultado = mainapp.db.consultar_query(query, (codprof, ))
         lista = []
-        for cod, nome in resultado:
-            lista.append(f'{cod} - {nome}')
+        if isinstance(resultado, tuple):
+            lista.append(f'{resultado[0]} - {resultado[1]}')
+        else:
+            for cod, nome in resultado:
+                lista.append(f'{cod} - {nome}')
         return lista
 
     def add_disc_toplevel(self):
@@ -2037,7 +1954,7 @@ class Professor_tab(ctk.CTkFrame):
             self.lb_add_disc.place(relx=0.5,
                                    rely=0.1,
                                    anchor='c')
-            disciplinas = self.lista_prof_disc(self.codprof)
+            disciplinas = self.lista_prof_disc(self.codprof, equal=False)
             self.ent_disciplina = ctk.CTkComboBox(
                 master=self.toplevel_window,
                 values=disciplinas
@@ -2085,24 +2002,92 @@ class Professor_tab(ctk.CTkFrame):
                 messagebox.showinfo(title='Sucesso',
                                     message=msg
                                     )
+                self.toplevel_window.destroy()
             else:
                 msg = "Não foi possivel adicionar a disciplina"
                 messagebox.showerror(title='ERRO',
                                      message=msg)
             self.montar_lista_disc(self.codprof)
-# SECTION - Class: Cadastro
+
+    def excluir_disc_toplevel(self):
+        self.variaveis_prof()
+        if not self.codprof:
+            messagebox.showerror(
+                title='ERRO',
+                message='Não há codProfessor selecionado'
+            )
+        elif self.toplevel_window is None or not self.toplevel_window.winfo_exists():  # noqa
+            self.toplevel_window = Top_level(master=self)
+            self.lb_add_disc = Label(texto='Selecione a disciplina',
+                                     master=self.toplevel_window)
+            self.lb_add_disc.place(relx=0.5,
+                                   rely=0.1,
+                                   anchor='c')
+            disciplinas = self.lista_prof_disc(self.codprof, equal=True)
+            self.ent_disciplina = ctk.CTkComboBox(
+                master=self.toplevel_window,
+                values=disciplinas
+            )
+            self.ent_disciplina.set('')
+            self.ent_disciplina.place(relx=0.5,
+                                      rely=0.5,
+                                      anchor='c')
+            self.btn_excluir_disc = Btn(texto='Excluir',
+                                        width=10,
+                                        master=self.toplevel_window,
+                                        command=self.excluir_disc
+                                        )
+            self.btn_excluir_disc.place(relx=0.4,
+                                        rely=0.7,
+                                        anchor='c',
+                                        )
+            self.btn_cancelar_disc = Btn(texto='Cancelar',
+                                         width=10,
+                                         master=self.toplevel_window,
+                                         command=self.toplevel_window.destroy
+                                         )
+            self.btn_cancelar_disc.place(relx=0.6,
+                                         rely=0.7,
+                                         anchor='c')
+            self.toplevel_window.focus()
+        else:
+            self.toplevel_window.focus()
+
+    def excluir_disc(self):
+        self.variaveis_prof()
+        if not self.ent_disciplina:
+            messagebox.showerror(title="ERRO",
+                                 message="Selecione uma disciplina")
+        else:
+            coddisciplina = self.ent_disciplina.get().split()[0]
+            query = """
+                DELETE FROM tbProfessor_has_tbDisciplina
+                WHERE codProfessor = %s
+                AND codDisciplina = %s
+            """
+            values = (self.codprof, coddisciplina)
+
+            if mainapp.db.executar_query(query, values):
+                msg = f'''Disciplina {coddisciplina}
+                removida com sucesso do professor {self.nome}'''
+                messagebox.showinfo(title='Sucesso',
+                                    message=msg
+                                    )
+                self.toplevel_window.destroy()
+            else:
+                msg = "Não foi possivel adicionar a disciplina"
+                messagebox.showerror(title='ERRO',
+                                     message=msg)
+            self.montar_lista_disc(self.codprof)
 
 
 class Cadastro(ctk.CTkFrame):
     """Classe que representa o frame que define Cadastro."""
-    # SECTION - Init
 
     def __init__(self, **kw) -> None:
         super().__init__(**kw)
         self.create_widgets()
         self.create_layout()
-    # !SECTION - Init
-    # SECTION - Method: create_widgets
 
     def create_widgets(self):
         """Criação dos widgets de Cadastro, é chamado no __init__."""
@@ -2116,24 +2101,16 @@ class Cadastro(ctk.CTkFrame):
         self.frame_aluno = Aluno_tab(master=self.alunotab)
         self.frame_professor = Professor_tab(master=self.professortab)
 
-    # !SECTION - Method: create_widgets
-    # SECTION - Method: create_layout
-
     def create_layout(self):
         """Criação do layout dos widgets de Cadastro, é chamado no __init__."""
 
         self.cadastro_tree.place(relx=0.02, rely=0.01,
                                  relwidth=0.96, relheight=0.95)
         self.frame_aluno.pack()
-    # !SECTION - Method: create_layout
-# !SECTION - Class: Cadastro
-
-# SECTION - Class: Banco_de_dados
 
 
 class Banco_de_dados(ctk.CTkFrame):
     """Classe que representa o frame que define a tela Banco de Dados."""
-    # SECTION - Init
 
     def __init__(self, **kw) -> None:
         super().__init__(**kw)
@@ -2141,8 +2118,6 @@ class Banco_de_dados(ctk.CTkFrame):
 
         self.create_widgets()
         self.create_layout()
-    # !SECTION - Init
-    # SECTION - Method: create_widgets
 
     def create_widgets(self):
         """Criação dos widgets da tela Banco de dados, é chamado no __init__."""  # noqa
@@ -2169,8 +2144,6 @@ class Banco_de_dados(ctk.CTkFrame):
         self.frame_bd_mysql = ctk.CTkFrame(self.frame_bd,
                                            fg_color='grey',
                                            border_width=2)
-    # !SECTION - Method: create_widgets
-    # SECTION - Method: create_sub_widgets
 
     def create_sub_widgets(self, tipo: str):
         """
@@ -2244,15 +2217,11 @@ class Banco_de_dados(ctk.CTkFrame):
             self.lb_default = Label('Selecione uma opção',
                                     master=self.frame_bd_mysql)
             self.lb_default.pack()
-    # !SECTION - Method: create_sub_widgets
-    # SECTION - Method: att_frame_bd_sub
 
     def att_frame_bd_sub(self, var, index, mode):
         """TODO: entender para fazer DocSting"""
         self.tipo = self.ent_tipo_bd.get()
         self.create_sub_widgets(self.tipo)
-    # !SECTION - Method: att_frame_bd_sub
-    # SECTION - Method: create_layout
 
     def create_layout(self):
         """Criação do layout dos widgets da tela Banco de dados, é chamado no __init__."""  # noqa
@@ -2269,8 +2238,6 @@ class Banco_de_dados(ctk.CTkFrame):
 
         self.frame_bd_mysql.place(relx=0.15, rely=0.3,
                                   relwidth=0.7, relheight=0.6,)
-    # !SECTION Method: create_layout
-    # SECTION - Method: salvar_params
 
     def salvar_params(self):
         """Salva os parametros do Banco de dados em no arquivo db_config.json."""  # noqa
@@ -2290,9 +2257,6 @@ class Banco_de_dados(ctk.CTkFrame):
         except Exception as e:
             messagebox.showerror(
                 title="Erro ao salvar as configurações", message=f'{e}')
-    # !SECTION - Method: salvar_params
-# !SECTION - Class: Banco de dados
-# SECTION - Class: Sobre
 
 
 class Sobre(ctk.CTkFrame):
@@ -2302,8 +2266,6 @@ class Sobre(ctk.CTkFrame):
         super().__init__(**kw)
         lb = ctk.CTkLabel(self, text="Sobre")
         lb.pack(expand=True, fill='both', padx=20, pady=20)
-# !SECTION - class: Sobre
-# SECTION - class: DataBase
 
 
 class DataBase(Controlador_db):
@@ -2323,7 +2285,6 @@ class DataBase(Controlador_db):
         self.user = user
         self.password = password
         self.database = database
-# !SECTION - class: DataBase
 
 
 if __name__ == '__main__':
