@@ -558,6 +558,44 @@ class funcs(Professor, Aluno, Endereco):
         finally:
             self.desconectar()
 
+    def inserir_endereco_professor(self):
+        try:
+            self.conectar()
+            self.cursor.execute("""SELECT codProfessor from tbprofessor""")
+            professores = self.cursor.fetchall()
+            professores = tuple(tupla for tupla in professores)
+            for professor in professores:
+                endereco = Endereco().montar_dict()
+                querryend = """
+                        INSERT INTO tbEndereco(cep, estado, cidade, bairro, logradouro, numero)
+                        VALUES (%s, %s, %s, %s, %s, %s)"""
+                dadosend = (
+                    endereco['cep'],
+                    endereco['estado'],
+                    endereco['cidade'],
+                    endereco['bairro'],
+                    endereco['logradouro'],
+                    endereco['numero'],
+                )
+
+                self.cursor.execute(querryend, dadosend)
+                idendereco = self.cursor.lastrowid
+                dadosprof = (idendereco, professor[0])
+
+                querryalu = """UPDATE tbProfessor
+                                SET codEndereco = %s
+                                WHERE codprofessor = %s"""
+                print(dadosprof)
+                self.cursor.execute(querryalu, dadosprof)
+            self.cnx.commit()
+        except Exception as e:
+            print(
+                f"Erro ao adicionar na endereco do professor {e}")
+            self.cnx.rollback()
+            traceback.print_exc()
+        finally:
+            self.desconectar()
+
     def inserir_telefone_alunos(self):
         try:
             self.conectar()
@@ -575,6 +613,34 @@ class funcs(Professor, Aluno, Endereco):
                     querrytelalu = """INSERT INTO tbAluno_has_tbTelefone (codra, codTelefone)
                                 VALUES (%s, %s)"""
                     self.cursor.execute(querrytelalu, (aluno[0], codTelefone))
+                    print(f'p={p + 1}, tel={tel}')
+            self.cnx.commit()
+        except Exception as e:
+            print(
+                f"Erro ao adicionar na endereco do aluno {e}")
+            self.cnx.rollback()
+            traceback.print_exc()
+        finally:
+            self.desconectar()
+
+    def inserir_telefone_professor(self):
+        try:
+            self.conectar()
+            self.cursor.execute("""SELECT codProfessor from tbProfessor""")
+            professores = self.cursor.fetchall()
+            professores = tuple(tupla for tupla in professores)
+            for professor in professores:
+
+                for p in range(randint(1, 3)):
+                    tel = fake.msisdn()
+                    querrytel = """INSERT INTO tbTelefone (numero, prioridade)
+                                VALUES (%s, %s)"""
+                    self.cursor.execute(querrytel, (tel, p + 1))
+                    codTelefone = self.cursor.lastrowid
+                    querrytelprof = """INSERT INTO tbProfessor_has_tbTelefone (codProfessor, codTelefone)
+                                VALUES (%s, %s)"""
+                    self.cursor.execute(
+                        querrytelprof, (professor[0], codTelefone))
                     print(f'p={p + 1}, tel={tel}')
             self.cnx.commit()
         except Exception as e:
@@ -625,5 +691,7 @@ class funcs(Professor, Aluno, Endereco):
 # funcs().matricular_alunos_turma(turma=18)
 # funcs().matricular_aluno_em_turmas(6)
 # funcs().inserir_endereco_alunos()
+# funcs().inserir_endereco_professor()
 # funcs().inserir_telefone_alunos()
+# funcs().inserir_telefone_professor()
 # funcs().inserir_email_cpf_alunos()

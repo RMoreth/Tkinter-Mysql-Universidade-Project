@@ -1,6 +1,6 @@
 from mysql.connector import connect, Error
 from tkinter import messagebox  # type:ignore
-from typing import Union, Tuple
+from typing import Union, Tuple, List, Any
 
 
 class Controlador_db:
@@ -59,7 +59,7 @@ class Controlador_db:
         finally:
             self.desconecta_bd()
 
-    def executar_querry(self, query: str, value: Union[Tuple, None] = None) -> bool:  # noqa
+    def executar_query(self, query: str, value: Union[Tuple, None] = None) -> bool:  # noqa
         """
         Executa uma consulta SQL do banco de dados.
 
@@ -88,18 +88,18 @@ class Controlador_db:
             self.conn.rollback()  # type:ignore
             return False
         finally:
-            self.desconecta_bd
+            self.desconecta_bd()
 
     def consultar_query(
         self,
-        query,
-        var=None,
-    ):
+        query: str,
+        var: Union[Tuple, None] = None,
+    ) -> Union[List[Tuple], Tuple, Any]:
         """
         Faz uma consulta no banco de dados.
 
         Args:
-            query: A querry SQL que será executada
+            query: A query SQL que será executada
             var: As variaveis inseridas na query caso existam
         Returns:
             list:Uma lista com os resultados da consulta SQL no banco de dados,
@@ -113,13 +113,59 @@ class Controlador_db:
                 self.cursor.execute(query)  # type:ignore
             resultados = self.cursor.fetchall()  # type:ignore
             print(f'resultados = {resultados}')
-            return resultados
+            if len(resultados) == 1 and len(resultados[0]) == 1:
+                return resultados[0][0]
+            elif len(resultados) == 1:
+                return resultados[0]
+            else:
+                return resultados
         except Error as e:
             print(f"{e}")
             return []
         finally:
             print(query)
             print(var)
+            self.desconecta_bd()
+
+    def executar_transacao(
+            self,
+            queries: List[str],
+            valores: List[Tuple] = []
+    ) -> bool:
+        if valores and len(queries) != len(valores):
+            raise ValueError(
+                'O numero de queries deve ser igual ao numero de conjuntos e valores')
+        self.conecta_bd()
+        try:
+            for i, query in enumerate(queries):
+                if valores:
+                    self.cursor.execute(query, valores[i])  # type: ignore
+                else:
+                    self.cursor.execute(query)  # type: ignore
+            self.conn.commit()  # type: ignore
+            return True
+
+        except Error as e:
+            print(f"Erro na transação {e}")
+            self.conn.rollback()  # type: ignore
+            return False
+
+    def criar_dict(self, query):
+        self.conecta_bd()
+        try:
+            self.cursor.execute(query)
+            result = self.cursor.fetchall()
+            dict = {row[0]: row[1] for row in result}
+            print(dict)
+            return dict
+            # TODO - Terminar
+        except Exception as e:
+            messagebox.showerror(
+                title="ERRO",
+                message=f"""Não foi possivel executar a querry:{query}
+                            Erro: {e} """
+            )
+        finally:
             self.desconecta_bd()
 
     def lastrowid(self):

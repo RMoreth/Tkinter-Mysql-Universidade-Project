@@ -307,6 +307,13 @@ class Btn(ctk.CTkButton):
                        text=texto,)
 # !SECTION - Class: Btn
 
+
+class Top_level(ctk.CTkToplevel):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.geometry('400x200')
+        self.focus_set()
+        self.grab_set()
 # SECTION - Class: Aluno_tab
 
 
@@ -462,7 +469,8 @@ class Aluno_tab(ctk.CTkFrame):
         self.btn_alterar.configure(border_color='lightseagreen',
                                    border_width=1,
                                    fg_color='gray22',
-                                   text_color='black',)
+                                   text_color='black',
+                                   command=self.alterar_alu,)
 
         self.btn_novo = Btn('Novo', master=self)
         self.btn_novo.configure(border_color='green4',
@@ -525,6 +533,7 @@ class Aluno_tab(ctk.CTkFrame):
                                              command=self.lista_alu.yview)
         self.lista_alu.configure(yscrollcommand=self.scrool_lista_alu.set)
         self.lista_alu.bind("<Double-1>", self.on_doubleclick_aluno)
+
     # !SECTION - Method: create_widgets
     # SECTION - Method: create_layout
 
@@ -618,6 +627,7 @@ class Aluno_tab(ctk.CTkFrame):
                              relheight=0.5, relwidth=0.82)
         self.scrool_lista_alu.place(
             relx=0.9, rely=0.5, relheight=0.5, relwidth=0.01)
+
     # !SECTION - Method: create_layout
     # SECTION - Method: variaveis_alu
 
@@ -650,7 +660,7 @@ class Aluno_tab(ctk.CTkFrame):
         """Preenche a Treeview lista_alu com as informações do banco de dados."""  # noqa
 
         self.lista_alu.delete(*self.lista_alu.get_children())
-        querry_lista_alu = """ SELECT a.codra,
+        query_lista_alu = """ SELECT a.codra,
                     a.nome,
                     a.cpf,
                     date_format(a.data_nasc, '%d/%m/%Y'),
@@ -663,10 +673,11 @@ class Aluno_tab(ctk.CTkFrame):
                     ORDER BY a.nome;
                     """
 
-        lista = mainapp.db.consultar_query(querry_lista_alu)
+        lista = mainapp.db.consultar_query(query_lista_alu)
 
         for i in lista:
             self.lista_alu.insert("", tk.END, values=i)  # type:ignore
+
     # !SECTION - Method: montar_lista_alu
     # SECTION - Method: montar_lista_cursos
 
@@ -735,7 +746,7 @@ class Aluno_tab(ctk.CTkFrame):
         query = "SELECT codEndereco FROM tbAluno WHERE codra = %s"
         self.result = mainapp.db.consultar_query(
             query=query, var=(self.codra, ))
-        self.codendereco = str(self.result[0][0])  # type:ignore
+        self.codendereco = str(self.result)  # type:ignore
         queryend = """
                 SELECT cep, estado, cidade, bairro, logradouro, numero
                 FROM tbEndereco
@@ -747,7 +758,7 @@ class Aluno_tab(ctk.CTkFrame):
         self.campos_endereco = self.result_list
 
         c = 0
-        for v in self.campos_endereco[0]:
+        for v in self.campos_endereco:
             match c:
                 case 0:
                     self.ent_cep.insert(tk.END, v)
@@ -768,6 +779,7 @@ class Aluno_tab(ctk.CTkFrame):
                     self.ent_numero.insert(tk.END, v)
 
         self.montar_lista_tel(col1)
+
     # !SECTION - Method: on_doubleclick_aluno
     # SECTION - Method: montar_lista_tel
 
@@ -788,6 +800,8 @@ class Aluno_tab(ctk.CTkFrame):
         self.lista_tel_result = mainapp.db.consultar_query(
             querytel, (ra,)
         )
+        if isinstance(self.lista_tel_result, tuple):
+            self.lista_tel_result = [self.lista_tel_result]
 
         for i in self.lista_tel_result:
             self.lista_tel.insert(
@@ -798,7 +812,7 @@ class Aluno_tab(ctk.CTkFrame):
     def buscar_aluno(self):
         self.variaveis_alu()
 
-        querrybusca = """
+        querybusca = """
                 SELECT a.codRA,
                 a.nome,
                 a.cpf,
@@ -856,12 +870,17 @@ class Aluno_tab(ctk.CTkFrame):
             values.append(f"%{self.numero}%")
 
         if where:
-            querrybusca += " WHERE " + " AND ".join(where)
-            querrybusca += " ORDER BY a.nome ;"
+            querybusca += " WHERE " + " AND ".join(where)
+            querybusca += " ORDER BY a.nome ;"
 
-        self.lista_alu_busca = mainapp.db.consultar_query(querrybusca, values)
+        self.lista_alu_busca = mainapp.db.consultar_query(
+            querybusca, tuple(values))
 
         self.lista_alu.delete(*self.lista_alu.get_children())
+
+        if isinstance(self.lista_alu_busca, tuple):
+            self.lista_alu_busca = [self.lista_alu_busca]
+
         for i in self.lista_alu_busca:
             self.lista_alu.insert("", tk.END, values=(i))  # type:ignore
     # !SECTION - Method: buscar_aluno
@@ -903,34 +922,34 @@ class Aluno_tab(ctk.CTkFrame):
                                  message=f"Os campos {lista_campos}, são obrigatórios")  # noqa
         else:
 
-            querry_end = """
+            query_end = """
                 INSERT INTO tbEndereco (cep, estado, cidade, bairro,
                 logradouro, numero)
                 VALUES (%s, %s, %s, %s, %s, %s)
                         """
-            mainapp.db.executar_querry(querry_end,
-                                       (self.cep, self.estado, self.cidade,
-                                        self.bairro, self.logradouro,
-                                        self.numero))
+            mainapp.db.executar_query(query_end,
+                                      (self.cep, self.estado, self.cidade,
+                                       self.bairro, self.logradouro,
+                                       self.numero))
             lastcodend = mainapp.db.last_id
 
-            querry_codcurso = """
+            query_codcurso = """
                 SELECT codCurso FROM tbCurso WHERE nome like %s
                             """
             codcurso = mainapp.db.consultar_query(
-                querry_codcurso, (f'%{self.curso}%', ))[0][0]  # type: ignore
+                query_codcurso, (f'%{self.curso}%', ))  # type: ignore
 
-            querry_add = """
+            query_add = """
             INSERT INTO tbaluno (nome, cpf, email, statusmatricula,
             data_nasc, codendereco, codcurso)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
 
-            mainapp.db.executar_querry(querry_add,
-                                       (self.nome, self.cpf, self.email,
-                                        self.status_matricula,
-                                        self.data_nasc_format,
-                                        lastcodend, codcurso))
+            mainapp.db.executar_query(query_add,
+                                      (self.nome, self.cpf, self.email,
+                                       self.status_matricula,
+                                       self.data_nasc_format,
+                                       lastcodend, codcurso))
             messagebox.showinfo(
                 title='Sucesso',
                 message=f'Aluno {self.nome} foi adicionado com sucesso.'
@@ -950,10 +969,10 @@ class Aluno_tab(ctk.CTkFrame):
                                           {self.nome} CodRA = {self.codra}""")
             if msg is True:
 
-                querry_del = """
+                query_del = """
                 DELETE from tbaluno WHERE codra = %s
                 """
-                mainapp.db.executar_querry(querry_del, (self.codra,))
+                mainapp.db.executar_query(query_del, (self.codra,))
                 self.montar_lista_alu()
                 messagebox.showinfo(
                     title='Sucesso',
@@ -982,25 +1001,25 @@ class Aluno_tab(ctk.CTkFrame):
                 message=f'{msg}'
             )
         else:
-            querrytel = """
+            querytel = """
                         INSERT INTO tbTelefone
                         (numero, prioridade)
                         VALUES (%s, %s)"""
             values = (self.telefone, self.prioridade)
 
-            mainapp.db.executar_querry(query=querrytel,
-                                       value=values)
+            mainapp.db.executar_query(query=querytel,
+                                      value=values)
 
             codTel = mainapp.db.last_id
 
-            querryaht = """
+            queryaht = """
                         INSERT INTO tbAluno_has_tbTelefone
                         (codRa, codTelefone)
                         VALUES (%s, %s)"""
             valuesaht = (self.codra, codTel)
 
-            mainapp.db.executar_querry(query=querryaht,
-                                       value=valuesaht)
+            mainapp.db.executar_query(query=queryaht,
+                                      value=valuesaht)
             self.montar_lista_tel(self.codra)
             messagebox.showinfo(
                 title='Sucesso',
@@ -1021,24 +1040,120 @@ class Aluno_tab(ctk.CTkFrame):
             self.ent_telefone.insert(tk.END, col2)
     # !SECTION - Method: ondoubleclick_alu_tel
 
+    def alterar_alu(self):
+        self.variaveis_alu()
+        lista_campos = []
+        if not self.nome:
+            lista_campos.append("nome")
+        if not self.cpf:
+            lista_campos.append("cpf")
+        if not self.email:
+            lista_campos.append("email")
+        if not self.status_matricula:
+            lista_campos.append("status da matricula")
+        if not self.data_nasc:
+            lista_campos.append("data de Nascimento")
+        if not self.cep:
+            lista_campos.append("cep")
+        if not self.estado:
+            lista_campos.append("estado")
+        if not self.cidade:
+            lista_campos.append("cidade")
+        if not self.bairro:
+            lista_campos.append("bairro")
+        if not self.logradouro:
+            lista_campos.append("logradouro")
+        if not self.numero:
+            lista_campos.append("número")
+        if not self.curso:
+            lista_campos.append("Curso")
+
+        if lista_campos:
+            messagebox.showerror(
+                title='campos invalidos',
+                 message=f"Os campos {lista_campos}, são obrigatórios")  # noqa
+        else:
+            query_curso = """
+            SELECT codCurso
+            FROM tbCurso
+            WHERE nome like %s"""
+
+            codcurso = mainapp.db.consultar_query(query_curso,
+                                                  (f'%{self.curso}%', ))
+
+            query_codend = """
+                SELECT codEndereco
+                FROM tbAluno
+                WHERE codRa = %s"""
+
+            codend = mainapp.db.consultar_query(query_codend, (self.codra, ))
+
+            queries = ["""
+            UPDATE tbAluno
+            SET nome = %s,
+            cpf = %s,
+            email = %s,
+            statusmatricula = %s,
+            data_nasc = %s,
+            codCurso = %s
+            WHERE codRA = %s""",
+                       """
+            UPDATE tbEndereco
+            SET
+            cep = %s,
+            estado = %s,
+            cidade = %s,
+            bairro = %s,
+            logradouro = %s,
+            numero = %s
+            WHERE codEndereco = %s
+            """]
+
+            values = [
+                (self.nome, self.cpf, self.email,
+                 self.status_matricula, self.data_nasc_format,
+                 codcurso, self.codra),
+                (self.cep, self.estado,
+                 self.cidade, self.bairro,
+                 self.logradouro, self.numero,
+                 codend)
+            ]
+            set_confirm_alu = mainapp.db.executar_transacao(
+                queries, values
+            )
+
+            if set_confirm_alu:
+                messagebox.showinfo(
+                    title='Sucesso',
+                    message='Dados atualizados com sucesso'
+                )
+            else:
+                messagebox.showerror(
+                    title='ERRO',
+                    message='Erro ao atualizar os dados'
+                )
+        self.montar_lista_alu()
+        # TODO - Terminar usando a funcao nova
+
     # SECTION - Method: excluir_tel_alu
+
     def excluir_tel_alu(self):
         self.variaveis_alu()
         if self.telefone:
-            querry_select = """
+            query_select = """
                         SELECT t.codTelefone FROM tbTelefone t
                         JOIN tbAluno_has_tbTelefone aht
                         ON aht.codTelefone = t.codTelefone
                         WHERE aht.codRa = %s AND t.numero = %s"""
             values = (self.codra, self.telefone)
-            resultado = mainapp.db.consultar_query(querry_select, values)[0]
+            resultado = mainapp.db.consultar_query(query_select, values)
             print(resultado)
-            querry_del = """
+            query_del = """
                     DELETE FROM tbTelefone WHERE codTelefone = %s"""
 
-            executar = mainapp.db.executar_querry(
-                querry_del, resultado)  # type: ignore
-            if executar is True:
+            executar = mainapp.db.executar_query(
+                query_del, (resultado, ))  # type: ignore
+            if executar:
                 messagebox.showinfo(
                     title='Sucesso',
                     message=f'Telefone: {self.telefone} apagado com sucesso'
@@ -1048,15 +1163,933 @@ class Aluno_tab(ctk.CTkFrame):
                 messagebox.showerror(
                     title="ERRO",
                     message="O telefone não pode ser apagado"
-            )
+                )
         else:
             messagebox.showerror(
-                    title="ERRO",
-                    message="Selecione ou digite um numero de telefone"
+                title="ERRO",
+                message="Selecione ou digite um numero de telefone"
             )
     # !SECTION - Method: excluir_tel_alu
 # !SECTION - Class: Aluno_tab
 
+
+class Professor_tab(ctk.CTkFrame):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.pack(fill="both", expand=True)
+        self.create_widgets()
+        self.create_layout()
+        self.montar_lista_prof()
+        self.toplevel_window = None
+
+    def create_widgets(self):
+        """Criação dos widgets de Alunotab, é chamado no __init__."""
+
+        self.titulo = ctk.CTkLabel(self,
+                                   text="Cadastro Professor",
+                                   font=("Helvetica", 25),
+                                   fg_color="transparent")
+        self.lb_codprofessor = Label('CodPRofessor', master=self)
+        self.ent_codprofessor = Entry(master=self)
+
+        self.lb_nome = Label('Nome', master=self)
+        self.ent_nome = Entry(master=self)
+
+        self.lb_email = Label('Email', master=self)
+        self.ent_email = Entry(master=self)
+
+        self.lb_salario = Label('Salário', master=self)
+        self.ent_salario = Entry(master=self)
+
+        self.lb_cep = ctk.CTkButton(self,
+                                    fg_color='transparent',
+                                    border_color='green',
+                                    border_width=1,
+                                    text='CEP')
+        self.ent_cep = Entry(master=self)
+
+        self.lb_estado = Label('Estado', master=self)
+        self.ent_estado = ctk.CTkComboBox(self,
+                                          fg_color='white',
+                                          text_color='black',
+                                          values=[
+                                              'AC', 'AL', 'AP', 'AM', 'BA',
+                                              'CE', 'DF', "ES", 'GO', 'MA',
+                                              'MT', 'MS', 'MG', 'PA', 'PB',
+                                              'PR', 'PE', 'PI', 'RJ', 'RN',
+                                              'RS', 'RO', 'RR', 'SC', 'SP',
+                                              'SE', 'TO']
+                                          )
+        self.ent_estado.set('')
+
+        self.lb_cidade = Label('Cidade', master=self)
+        self.ent_cidade = Entry(master=self)
+
+        self.lb_bairro = Label('Bairro', master=self)
+        self.ent_bairro = Entry(master=self)
+
+        self.lb_logradouro = Label('Logradouro', master=self)
+        self.ent_logradouro = Entry(master=self)
+
+        self.lb_numero = Label('Numero', master=self)
+        self.ent_numero = Entry(master=self)
+
+        self.lb_foto = Label('Foto', master=self)
+        self.lb_foto.configure(fg_color="gray27",
+                               corner_radius=7)
+        self.frame_foto = ctk.CTkFrame(self,
+                                       fg_color='gray27',
+                                       border_width=2,
+                                       border_color='gray24',
+                                       )
+
+        self.lb_tel = Label('Telefone', master=self)
+        self.lb_tel.configure(fg_color="gray27",
+                              corner_radius=7)
+
+        self.frame_tel = ctk.CTkFrame(self,
+                                      fg_color='gray27',
+                                      border_width=2,
+                                      border_color='gray24',
+                                      )
+        self.lb_sel_alu = Label(
+            'Aluno: Não selecionado', master=self.frame_tel)
+        self.lista_tel = ttk.Treeview(
+            self.frame_tel,
+            height=3,
+            columns=('col1', 'col2',)
+        )
+        self.lista_tel.heading('#0', text='')
+        self.lista_tel.heading('#1', text='P')
+        self.lista_tel.heading('#2', text='Número')
+
+        self.lista_tel.column('#0', width=1, minwidth=1, anchor='center')
+        self.lista_tel.column('#1', width=20, anchor='center', minwidth=20)
+        self.lista_tel.column('#2', width=150, anchor='center', minwidth=150)
+        self.lista_tel.bind("<Double-1>", self.ondoubleclick_prof_tel)
+
+        self.scrool_lista_tel = tk.Scrollbar(self.frame_tel,
+                                             orient='vertical',
+                                             command=self.lista_tel.yview)
+        self.lista_tel.configure(yscrollcommand=self.scrool_lista_tel.set)
+
+        self.lb_prioridade = Label('Prioridade', master=self.frame_tel)
+        self.ent_prioridade = ctk.CTkComboBox(self.frame_tel,
+                                              fg_color="white",
+                                              text_color="black",
+                                              values=['1',
+                                                      '2',
+                                                      '3',
+                                                      '4',
+                                                      '5'])
+        self.ent_prioridade.set('')
+
+        self.lb_telefone = Label('Telefone', master=self.frame_tel)
+        self.ent_telefone = Entry(master=self.frame_tel)
+
+        self.btn_novo_tel = Btn('Novo',
+                                master=self.frame_tel,
+                                command=self.add_tel_prof
+                                )
+        self.btn_apagar_tel = Btn('Apagar',
+                                  master=self.frame_tel,
+                                  command=self.excluir_tel_prof
+                                  )
+        self.btn_excluir = Btn('Excluir', master=self)
+        self.btn_excluir.configure(border_color='red1',
+                                   border_width=1,
+                                   fg_color='red4',
+                                   text_color='white',
+                                   command=self.excluir_prof
+                                   )
+
+        self.btn_alterar = Btn('Alterar', master=self)
+        self.btn_alterar.configure(border_color='lightseagreen',
+                                   border_width=1,
+                                   fg_color='gray22',
+                                   text_color='black',
+                                   command=self.alterar_prof)
+
+        self.btn_novo = Btn('Novo', master=self)
+        self.btn_novo.configure(border_color='green4',
+                                border_width=1,
+                                fg_color='gray22',
+                                text_color='black',
+                                command=self.add_prof)
+
+        self.btn_limpar = Btn('Limpar', master=self)
+        self.btn_limpar.configure(border_color='brown4',
+                                  border_width=1,
+                                  fg_color='gray22',
+                                  text_color='black',
+                                  command=self.apagar_campos_prof)
+
+        self.btn_buscar = Btn('Buscar', master=self)
+        self.btn_buscar.configure(border_color='gray75',
+                                  border_width=1,
+                                  fg_color='gray22',
+                                  text_color='black',
+                                  command=self.buscar_prof
+                                  )
+
+        self.lista_departamento = self.montar_lista_departamento()
+
+        self.lb_departamento = Label('Departamento', master=self)
+
+        self.ent_departamento = ctk.CTkComboBox(
+            self,
+            fg_color='white',
+            text_color='black',
+            values=self.lista_departamento,
+            font=("Helvetica", 20),
+            dropdown_font=(
+                "Helvetica", 20),
+            justify='center'
+        )
+        self.ent_departamento.set('')
+
+        self.lb_disciplinas = Label('Disciplinas', master=self)
+
+        self.lista_disciplina = ttk.Treeview(
+            self,
+            columns=('col1', 'col2', 'col3')
+        )
+        self.lista_disciplina.heading('#0', text='')
+        self.lista_disciplina.heading('#1', text='cod')
+        self.lista_disciplina.heading('#2', text='Nome')
+
+        self.lista_disciplina.column(
+            "#0", width=1, minwidth=1, anchor='center')
+        self.lista_disciplina.column(
+            "#1", width=50, minwidth=50, anchor='center')
+        self.lista_disciplina.column(
+            "#2", minwidth=350, stretch=True)
+
+        self.scrool_lista_disciplina = tk.Scrollbar(
+            self,
+            orient='vertical',
+            command=self.lista_disciplina.yview)
+        self.lista_disciplina.configure(
+            yscrollcommand=self.scrool_lista_disciplina.set)
+
+        self.btn_excluir_disc = Btn('Excluir', master=self)
+        self.btn_adicionar_disc = Btn('Adicionar',
+                                      master=self,
+                                      command=self.add_disc_toplevel)
+
+        self.lista_prof = ttk.Treeview(
+            self,
+            height=3,
+            columns=('col1', 'col2', 'col3', 'col4', 'col5')
+        )
+        self.lista_prof.heading('#0', text='')
+        self.lista_prof.heading('#1', text='CodProfessor')
+        self.lista_prof.heading('#2', text='Nome')
+        self.lista_prof.heading('#3', text='Email')
+        self.lista_prof.heading('#4', text='Salário')
+        self.lista_prof.heading('#5', text='Departamento')
+
+        self.lista_prof.column('#0', width=1, minwidth=1, anchor='center')
+        self.lista_prof.column('#1', width=50, anchor='center', minwidth=50)
+        self.lista_prof.column('#2', width=160, anchor='center', minwidth=160)
+        self.lista_prof.column('#3', width=160, anchor='center', minwidth=160)
+        self.lista_prof.column('#4', width=90, anchor='center', minwidth=90)
+        self.lista_prof.column('#5', width=160, anchor='center', minwidth=160)
+
+        self.scrool_lista_prof = tk.Scrollbar(self,
+                                              orient='vertical',
+                                              command=self.lista_prof.yview)
+        self.lista_prof.configure(yscrollcommand=self.scrool_lista_prof.set)
+        self.lista_prof.bind("<Double-1>", self.on_doubleclick_prof)
+
+    def create_layout(self):
+        """Criação do layout dos widgets de Alunotab, é chamado no __init__."""
+
+        self.titulo.place(anchor='center', relx=0.5, rely=0.05)
+
+        self.lb_codprofessor.place(relx=0.06, rely=0.12,
+                                   relwidth=0.2, anchor='c')
+        self.ent_codprofessor.place(relx=0.11, rely=0.1, relwidth=0.05)
+
+        self.lb_nome.place(relx=0.06, rely=0.16,
+                           relwidth=0.2, anchor='c')
+        self.ent_nome.place(relx=0.11, rely=0.14, relwidth=0.16)
+
+        self.lb_email.place(relx=0.06, rely=0.2,
+                            relwidth=0.2, anchor='c')
+        self.ent_email.place(relx=0.11, rely=0.18, relwidth=0.15)
+
+        self.lb_salario.place(relx=0.06, rely=0.24, anchor='c')
+        self.ent_salario.place(relx=0.11, rely=0.22, relwidth=0.1)
+
+        self.lb_cep.place(relx=0.29, rely=0.12, anchor='c', relwidth=0.04)
+        self.ent_cep.place(relx=0.32, rely=0.1, relwidth=0.07)
+
+        self.lb_estado.place(relx=0.29, rely=0.16, anchor='c')
+        self.ent_estado.place(relx=0.32, rely=0.14, relwidth=0.045)
+
+        self.lb_cidade.place(relx=0.29, rely=0.20, anchor='c')
+        self.ent_cidade.place(relx=0.32, rely=0.18, relwidth=0.1)
+
+        self.lb_bairro.place(relx=0.29, rely=0.24, anchor='c')
+        self.ent_bairro.place(relx=0.32, rely=0.22, relwidth=0.1)
+
+        self.lb_logradouro.place(relx=0.29, rely=0.28, anchor='c')
+        self.ent_logradouro.place(relx=0.32, rely=0.26, relwidth=0.1)
+
+        self.lb_numero.place(relx=0.29, rely=0.32, anchor='c')
+        self.ent_numero.place(relx=0.32, rely=0.3, relwidth=0.1)
+
+        self.lb_foto.place(relx=0.5, rely=0.105, relwidth=0.1, anchor='c')
+        self.frame_foto.place(relx=0.5, rely=0.23,
+                              relwidth=0.1, relheight=0.18,
+                              anchor='c')
+
+        self.lb_tel.place(
+            relx=0.78, rely=0.1, relwidth=0.1, anchor='c')
+
+        self.frame_tel.place(relx=0.78, rely=0.225,
+                             relwidth=0.3, relheight=0.2,
+                             anchor='c')
+        self.lb_sel_alu.place(relx=0.5, rely=0.06, anchor='c')
+        self.lista_tel.place(relx=0.01, rely=0.15,
+                             relheight=0.85, relwidth=0.45)
+        self.scrool_lista_tel.place(
+            relx=0.46, rely=0.15, relheight=0.85, relwidth=0.04)
+
+        self.lb_prioridade.place(relx=0.53, rely=0.15)
+        self.ent_prioridade.place(relx=0.7, rely=0.15, relwidth=0.12)
+
+        self.lb_telefone.place(relx=0.53, rely=0.36)
+        self.ent_telefone.place(relx=0.7, rely=0.36, relwidth=0.28)
+
+        self.btn_novo_tel.place(
+            relx=0.62, rely=0.76, relwidth=0.1, anchor='c')
+
+        self.btn_apagar_tel.place(
+            relx=0.79, rely=0.76, relwidth=0.15, anchor='c')
+
+        self.btn_excluir.place(relx=0.12, rely=0.4, relwidth=0.05)
+        self.btn_alterar.place(relx=0.18, rely=0.4, relwidth=0.05)
+        self.btn_novo.place(relx=0.24, rely=0.4, relwidth=0.05)
+        self.btn_limpar.place(relx=0.30, rely=0.4, relwidth=0.05)
+        self.btn_buscar.place(relx=0.36, rely=0.4, relwidth=0.05)
+
+        self.lb_departamento.place(
+            relx=0.78, rely=0.38, relwidth=0.1, anchor='c')
+        self.ent_departamento.place(relx=0.78, rely=0.41, anchor='c',
+                                    relwidth=0.3)
+
+        self.lb_disciplinas.place(relx=0.78, rely=0.5, anchor='c')
+
+        self.lista_disciplina.place(
+            relx=0.63, rely=0.55,
+            relheight=0.3, relwidth=0.3
+        )
+
+        self.scrool_lista_disciplina.place(relx=0.93,
+                                           rely=0.55,
+                                           relheight=0.3,
+                                           relwidth=0.01)
+
+        self.btn_adicionar_disc.place(relx=0.7, rely=0.86,
+                                      relwidth=0.05)
+        self.btn_excluir_disc.place(relx=0.8, rely=0.86,
+                                    relwidth=0.05)
+
+        self.lista_prof.place(relx=0.08, rely=0.5,
+                              relheight=0.5, relwidth=0.49)
+        self.scrool_lista_prof.place(
+            relx=0.57, rely=0.5, relheight=0.5, relwidth=0.01)
+
+    def variaveis_prof(self):
+        self.codprof = self.ent_codprofessor.get()
+        self.nome = self.ent_nome.get()
+        self.email = self.ent_email.get()
+        self.salario = self.ent_salario.get()
+        self.cep = self.ent_cep.get()
+        self.estado = self.ent_estado.get()
+        self.cidade = self.ent_cidade.get()
+        self.bairro = self.ent_bairro.get()
+        self.logradouro = self.ent_logradouro.get()
+        self.numero = self.ent_numero.get()
+        self.prioridade = self.ent_prioridade.get()
+        self.telefone = self.ent_telefone.get()
+        self.departamento = self.ent_departamento.get()
+
+    def montar_lista_departamento(self):
+        resultado = []
+        query = """
+            SELECT nome from tbDepartamento
+        """
+        lista = mainapp.db.consultar_query(query=query)
+        for row in lista:
+            resultado.append(row[0].strip().lower())
+        simplificado = []
+        for item in resultado:
+            novo = item.removeprefix("departamento de ")
+            novo.title()
+            simplificado.append(novo)
+        return simplificado
+
+        # TODO - terminar
+
+    def apagar_campos_prof(self):
+        self.ent_codprofessor.delete('0', tk.END)  # type: ignore
+        self.ent_nome.delete('0', tk.END)  # type: ignore
+        self.ent_email.delete('0', tk.END)  # type: ignore
+        self.ent_salario.delete('0', tk.END)
+        self.ent_estado.set('')  # type: ignore
+        self.ent_cidade.delete('0', tk.END)  # type: ignore
+        self.ent_bairro.delete('0', tk.END)  # type: ignore
+        self.ent_cep.delete('0', tk.END)  # type: ignore
+        self.ent_logradouro.delete('0', tk.END)  # type: ignore
+        self.ent_numero.delete('0', tk.END)  # type: ignore
+        self.ent_telefone.delete('0', tk.END)  # type: ignore
+        self.ent_prioridade.set('')  # type: ignore
+        self.ent_departamento.set('')
+
+        self.lista_tel.delete(*self.lista_tel.get_children())
+        self.lb_sel_alu.configure(
+            text='Pofessor não selecionado', fg_color='red', padx=2)
+        self.lista_disciplina.delete(*self.lista_disciplina.get_children())
+
+    def montar_lista_prof(self):
+        """Preenche a Treeview lista_alu com as informações do banco de dados."""  # noqa
+
+        self.lista_prof.delete(*self.lista_prof.get_children())
+        query_lista_prof = """ SELECT p.codProfessor,
+                                p.nome,
+                                p.email,
+                                p.salario,
+                                substring(d.nome, 16)
+                                FROM tbProfessor p
+                                JOIN tbDepartamento d
+                                ON p.codDepartamento = d.codDepartamento
+                                ORDER BY p.nome"""
+
+        lista = mainapp.db.consultar_query(query_lista_prof)
+
+        for i in lista:
+            self.lista_prof.insert("", tk.END, values=i)  # type:ignore
+
+    def on_doubleclick_prof(self, event):
+        """
+        Evento acionado com duplo clique em uma linha da treeview lista_alu,
+        busca as informações do aluno no banco de dados
+        e preenche as entrys com essas informações
+        """
+        self.apagar_campos_prof()
+        self.lista_prof.selection()  # type: ignore
+        for n in self.lista_prof.selection():  # type: ignore
+            col1, col2, col3, col4, col5 = self.lista_prof.item(  # noqa # type: ignore
+                n, 'values')
+
+            self.ent_codprofessor.insert(tk.END, col1)
+            self.ent_nome.insert(tk.END, col2)
+            self.ent_email.insert(tk.END, col3)  # type: ignore
+            self.ent_salario.insert(tk.END, col4)
+            self.ent_departamento.set(f'{col5}')
+        self.variaveis_prof()
+        query = "SELECT codEndereco FROM tbProfessor WHERE codProfessor = %s"
+        self.result = mainapp.db.consultar_query(
+            query=query, var=(self.codprof, ))
+        self.codendereco = str(self.result)  # type:ignore
+        queryend = """
+                SELECT cep, estado, cidade, bairro, logradouro, numero
+                FROM tbEndereco
+                WHERE codEndereco = %s
+        """
+        self.result_list = []
+        self.result_list = mainapp.db.consultar_query(
+            queryend, (self.codendereco, ))
+        self.campos_endereco = self.result_list
+
+        c = 0
+        for v in self.campos_endereco:
+            match c:
+                case 0:
+                    self.ent_cep.insert(tk.END, v)
+                    c += 1
+                case 1:
+                    self.ent_estado.set(str(v))
+                    c += 1
+                case 2:
+                    self.ent_cidade.insert(tk.END, v)
+                    c += 1
+                case 3:
+                    self.ent_bairro.insert(tk.END, v)
+                    c += 1
+                case 4:
+                    self.ent_logradouro.insert(tk.END, v)
+                    c += 1
+                case 5:
+                    self.ent_numero.insert(tk.END, v)
+
+        self.montar_lista_tel(col1)
+        self.montar_lista_disc(col1)
+
+    def montar_lista_tel(self, codprof):
+        self.lista_tel.delete(*self.lista_tel.get_children())
+
+        self.lb_sel_alu.configure(
+            text=f'Professor: {self.nome}', fg_color='green', padx=2)
+
+        querytel = """SELECT t.prioridade, t.numero
+                        FROM tbtelefone t
+                        JOIN tbProfessor_has_tbtelefone pht
+                        ON t.codtelefone = pht.codtelefone
+                        JOIN tbProfessor p ON pht.codProfessor = p.codProfessor
+                        where p.codProfessor = %s
+                        ORDER BY t.prioridade ;
+                        """
+
+        self.lista_tel_result = mainapp.db.consultar_query(
+            querytel, (codprof,)
+        )
+        if isinstance(self.lista_tel_result, tuple):
+            self.lista_tel_result = [self.lista_tel_result]
+
+        for i in self.lista_tel_result:
+            self.lista_tel.insert(
+                "", tk.END, values=(i[0], i[1]))  # type:ignore
+
+    def montar_lista_disc(self, codprof):
+        self.lista_disciplina.delete(*self.lista_disciplina.get_children())
+        querydisc = """
+                    SELECT d.codDisciplina, d.nome
+                    FROM tbDisciplina d
+                    JOIN tbProfessor_has_tbDisciplina phd
+                    ON d.codDisciplina = phd.codDisciplina
+                    WHERE phd.codProfessor = %s
+                    ORDER BY d.nome"""
+        lista_disciplina_result = mainapp.db.consultar_query(
+            querydisc, (codprof,)
+        )
+        if isinstance(lista_disciplina_result, tuple):
+            lista_disciplina_result = [lista_disciplina_result]
+
+        for i in lista_disciplina_result:
+            self.lista_disciplina.insert(
+                "", tk.END, values=(i[0], i[1]))
+
+    def buscar_prof(self):
+        self.variaveis_prof()
+
+        querybusca = """
+                    SELECT p.codProfessor,
+                    p.nome,
+                    p.email,
+                    p.salario,
+                    d.nome
+                    FROM tbProfessor p
+                    JOIN tbDepartamento d
+                    ON p.codDepartamento = d.codDepartamento
+                    JOIN tbEndereco e
+                    ON e.codEndereco = p.codEndereco
+                """
+        where = []
+        values = []
+
+        if self.codprof:
+            where.append("p.codProfessor = %s")
+            values.append(self.codprof)
+        if self.nome:
+            where.append("p.nome LIKE %s")
+            values.append(f'%{self.nome}%')
+        if self.email:
+            where.append("p.email LIKE %s")
+            values.append(f'%{self.email}%')
+        if self.salario:
+            where.append("p.salario = %s")
+            values.append(self.salario)
+        if self.departamento:
+            where.append("d.nome LIKE %s")
+            values.append(f'%{self.departamento}%')
+        if self.cep:
+            where.append("e.cep LIKE %s")
+            values.append(f'%{self.cep}%')
+        if self.estado:
+            where.append("e.estado LIKE %s")
+            values.append(self.estado)
+        if self.cidade:
+            where.append("e.cidade LIKE %s")
+            values.append(f'%{self.cidade}%')
+        if self.bairro:
+            where.append("e.bairro LIKE %s")
+            values.append(f"%{self.bairro}%")
+        if self.logradouro:
+            where.append("e.logradouro LIKE %s")
+            values.append(f"%{self.logradouro}%")
+        if self.numero:
+            where.append("e.numero LIKE %s")
+            values.append(f"%{self.numero}%")
+
+        if where:
+            querybusca += " WHERE " + " AND ".join(where)
+            querybusca += " ORDER BY p.nome ;"
+
+        self.lista_prof_busca = mainapp.db.consultar_query(
+            querybusca, tuple(values))
+
+        self.lista_prof.delete(*self.lista_prof.get_children())
+
+        if isinstance(self.lista_prof_busca, tuple):
+            self.lista_prof_busca = [self.lista_prof_busca]
+
+        for i in self.lista_prof_busca:
+            self.lista_prof.insert("", tk.END, values=(i))  # type:ignore
+
+    def add_prof(self):
+        """
+        Adiciona os dados de um novo aluno no banco de dados
+        """
+        self.variaveis_prof()
+        lista_campos = []
+        if not self.nome:
+            lista_campos.append("nome")
+        if not self.email:
+            lista_campos.append("email")
+        if not self.salario:
+            lista_campos.append("salário")
+        if not self.cep:
+            lista_campos.append("cep")
+        if not self.estado:
+            lista_campos.append("estado")
+        if not self.cidade:
+            lista_campos.append("cidade")
+        if not self.bairro:
+            lista_campos.append("bairro")
+        if not self.logradouro:
+            lista_campos.append("logradouro")
+        if not self.numero:
+            lista_campos.append("número")
+        if not self.departamento:
+            lista_campos.append("departamento")
+
+        if lista_campos:
+            messagebox.showerror(title='campos invalidos',
+                                message=f"Os campos {lista_campos}, são obrigatórios")  # noqa
+        else:
+
+            query_end = """
+                    INSERT INTO tbEndereco (cep, estado, cidade, bairro,
+                    logradouro, numero)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                            """
+            mainapp.db.executar_query(query_end,
+                                      (self.cep, self.estado, self.cidade,
+                                       self.bairro, self.logradouro,
+                                       self.numero))
+            lastcodend = mainapp.db.last_id
+
+            query_coddepartamento = """
+                    SELECT codDepartamento
+                    FROM tbDepartamento
+                    WHERE nome like %s"""
+            coddepartamento = mainapp.db.consultar_query(
+                # type: ignore
+                query_coddepartamento, (f'%{self.departamento}%', ))
+
+            query_add = """
+                INSERT INTO tbProfessor (nome, email, salario,
+                codendereco, codDepartamento)
+                VALUES (%s, %s, %s, %s, %s)
+                """
+
+            mainapp.db.executar_query(query_add,
+                                      (self.nome, self.email,
+                                       self.salario,
+                                       lastcodend, coddepartamento))
+            messagebox.showinfo(
+                title='Sucesso',
+                message=f'Professor {self.nome} foi adicionado com sucesso.'
+            )
+        # TODO - fazer aparecer apenas o aluno adicionado ao final
+        self.montar_lista_prof()
+
+    def excluir_prof(self):
+        self.variaveis_prof
+        if self.codprof:
+            message = f"""VOCÊ TEM CERTEZA QUE QUER DELETAR O PROFESSOR:
+                        {self.nome} CodProfessor = {self.codprof}"""
+            msg = messagebox.askyesno(
+                title="Deletar",
+                message=message)
+            if msg is True:
+
+                query_del = """
+                DELETE from tbProfessor WHERE codProfessor = %s
+                """
+                mainapp.db.executar_query(query_del, (self.codprof,))
+                self.montar_lista_prof()
+                messagebox.showinfo(
+                    title='Sucesso',
+                    message=f'Professor {self.nome} apagado com sucesso'
+                )
+            else:
+                messagebox.showerror(
+                    title="ERRO",
+                    message=f'CodProf: {self.codprof} NÃO foi excluido ')
+        else:
+            messagebox.showwarning(
+                title="Deletar",
+                message="CodProfessor não selecionado")
+
+    def alterar_prof(self):
+        self.variaveis_prof()
+        lista_campos = []
+        if not self.nome:
+            lista_campos.append("nome")
+        if not self.email:
+            lista_campos.append("email")
+        if not self.salario:
+            lista_campos.append("salário")
+        if not self.cep:
+            lista_campos.append("cep")
+        if not self.estado:
+            lista_campos.append("estado")
+        if not self.cidade:
+            lista_campos.append("cidade")
+        if not self.bairro:
+            lista_campos.append("bairro")
+        if not self.logradouro:
+            lista_campos.append("logradouro")
+        if not self.numero:
+            lista_campos.append("número")
+        if not self.departamento:
+            lista_campos.append("departamento")
+
+        if lista_campos:
+            messagebox.showerror(
+                title='campos invalidos',
+                 message=f"Os campos {lista_campos}, são obrigatórios")  # noqa
+        else:
+            query_departamento = """
+            SELECT codDepartamento
+            FROM tbdepartamento
+            WHERE nome like %s"""
+
+            coddepartamento = mainapp.db.consultar_query(
+                query_departamento,
+                (f'%{self.departamento}%', ))
+
+            query_codend = """
+                SELECT codEndereco
+                FROM tbProfessor
+                WHERE codProfessor = %s"""
+
+            codend = mainapp.db.consultar_query(query_codend, (self.codprof, ))
+
+            queries = ["""
+            UPDATE tbProfessor
+            SET nome = %s,
+            email = %s,
+            salario = %s,
+            codDepartamento = %s
+            WHERE codProfessor = %s""",
+                       """
+            UPDATE tbEndereco
+            SET
+            cep = %s,
+            estado = %s,
+            cidade = %s,
+            bairro = %s,
+            logradouro = %s,
+            numero = %s
+            WHERE codEndereco = %s
+            """]
+
+            values = [
+                (self.nome, self.email,
+                 self.salario,
+                 coddepartamento, self.codprof),
+                (self.cep, self.estado,
+                 self.cidade, self.bairro,
+                 self.logradouro, self.numero,
+                 codend)
+            ]
+            set_confirm_prof = mainapp.db.executar_transacao(
+                queries, values
+            )
+
+            if set_confirm_prof:
+                messagebox.showinfo(
+                    title='Sucesso',
+                    message='Dados atualizados com sucesso'
+                )
+            else:
+                messagebox.showerror(
+                    title='ERRO',
+                    message='Erro ao atualizar os dados'
+                )
+        self.montar_lista_prof()
+
+    def apagar_campos_tel(self):
+        self.ent_telefone.delete('0', tk.END)
+        self.ent_prioridade.set('')
+
+    def ondoubleclick_prof_tel(self, event):
+        self.apagar_campos_tel()
+        self.lista_tel.selection()
+        for n in self.lista_tel.selection():
+            col1, col2 = self.lista_tel.item(
+                n, 'values'
+            )
+            self.ent_prioridade.set(col1)
+            self.ent_telefone.insert(tk.END, col2)
+
+    def add_tel_prof(self):
+        self.variaveis_prof()
+
+        if not self.codprof:
+            msg = """
+                    Não há CodProfessor selecionado,
+                    Verifique o campo CodProfessor e tente novamente"""
+            messagebox.showerror(
+                title='ERRO',
+                message=f'{msg}'
+            )
+        else:
+            querytel = """
+                        INSERT INTO tbTelefone
+                        (numero, prioridade)
+                        VALUES (%s, %s)"""
+            values = (self.telefone, self.prioridade)
+
+            mainapp.db.executar_query(query=querytel,
+                                      value=values)
+
+            codTel = mainapp.db.last_id
+
+            querypht = """
+                        INSERT INTO tbProfessor_has_tbTelefone
+                        (codProfessor, codTelefone)
+                        VALUES (%s, %s)"""
+            valuespht = (self.codprof, codTel)
+
+            mainapp.db.executar_query(query=querypht,
+                                      value=valuespht)
+            self.montar_lista_tel(self.codprof)
+            messagebox.showinfo(
+                title='Sucesso',
+                message=f"""O numero {self.telefone},
+                foi adicionado ao professor {self.nome} """
+            )
+
+    def excluir_tel_prof(self):
+        self.variaveis_prof()
+        if self.telefone:
+            query_select = """
+                        SELECT t.codTelefone FROM tbTelefone t
+                        JOIN tbProfessor_has_tbTelefone pht
+                        ON pht.codTelefone = t.codTelefone
+                        WHERE pht.codProfessor = %s AND t.numero = %s"""
+            values = (self.codprof, self.telefone)
+            resultado = mainapp.db.consultar_query(query_select, values)
+            query_del = """
+                    DELETE FROM tbTelefone WHERE codTelefone = %s"""
+
+            executar = mainapp.db.executar_query(
+                query_del, (resultado, ))  # type: ignore
+            if executar:
+                messagebox.showinfo(
+                    title='Sucesso',
+                    message=f'Telefone: {self.telefone} apagado com sucesso'
+                )
+                self.montar_lista_tel(self.codprof)
+            else:
+                messagebox.showerror(
+                    title="ERRO",
+                    message="O telefone não pode ser apagado"
+                )
+        else:
+            messagebox.showerror(
+                title="ERRO",
+                message="Selecione ou digite um numero de telefone"
+            )
+
+    def lista_prof_disc(self, codprof):
+        query = """SELECT d.codDisciplina, d.nome
+                FROM tbDisciplina d
+                JOIN tbProfessor_has_tbDisciplina phd
+                ON d.codDisciplina = phd.codDisciplina
+                WHERE codProfessor != %s
+                ORDER BY d.codDisciplina"""
+
+        resultado = mainapp.db.consultar_query(query, (codprof, ))
+        lista = []
+        for cod, nome in resultado:
+            lista.append(f'{cod} - {nome}')
+        return lista
+
+    def add_disc_toplevel(self):
+        self.variaveis_prof()
+        if not self.codprof:
+            messagebox.showerror(
+                title='ERRO',
+                message='Não há codProfessor selecionado'
+            )
+        elif self.toplevel_window is None or not self.toplevel_window.winfo_exists():  # noqa
+            self.toplevel_window = Top_level(master=self)
+            self.lb_add_disc = Label(texto='Selecione a disciplina',
+                                     master=self.toplevel_window)
+            self.lb_add_disc.place(relx=0.5,
+                                   rely=0.1,
+                                   anchor='c')
+            disciplinas = self.lista_prof_disc(self.codprof)
+            self.ent_disciplina = ctk.CTkComboBox(
+                master=self.toplevel_window,
+                values=disciplinas
+            )
+            self.ent_disciplina.place(relx=0.5,
+                                      rely=0.5,
+                                      anchor='c')
+            self.btn_add_disc = Btn(texto='Adiconar',
+                                    width=10,
+                                    master=self.toplevel_window,
+                                    command=self.add_disc)
+            self.btn_add_disc.place(relx=0.4,
+                                    rely=0.7,
+                                    anchor='c',
+                                    )
+            self.btn_cancelar_disc = Btn(texto='Cancelar',
+                                         width=10,
+                                         master=self.toplevel_window,
+                                         command=self.toplevel_window.destroy
+                                         )
+            self.btn_cancelar_disc.place(relx=0.6,
+                                         rely=0.7,
+                                         anchor='c')
+            self.toplevel_window.focus()
+        else:
+            self.toplevel_window.focus()
+
+    def add_disc(self):
+        self.variaveis_prof()
+        if not self.ent_disciplina:
+            messagebox.showerror(title="ERRO",
+                                 message="Selecione uma disciplina")
+        else:
+            coddisciplina = self.ent_disciplina.get().split()[0]
+            query = """
+                INSERT INTO tbProfessor_has_tbDisciplina
+                (codProfessor, codDisciplina)
+                VALUES (%s, %s)
+            """
+            values = (self.codprof, coddisciplina)
+
+            if mainapp.db.executar_query(query, values):
+                msg = f'''Disciplina {coddisciplina}
+                adicionada com sucesso ao professor {self.nome}'''
+                messagebox.showinfo(title='Sucesso',
+                                    message=msg
+                                    )
+            else:
+                msg = "Não foi possivel adicionar a disciplina"
+                messagebox.showerror(title='ERRO',
+                                     message=msg)
+            self.montar_lista_disc(self.codprof)
 # SECTION - Class: Cadastro
 
 
@@ -1081,6 +2114,8 @@ class Cadastro(ctk.CTkFrame):
         self.discitab = self.cadastro_tree.add("Disciplina")
         self.turmatab = self.cadastro_tree.add("Turma")
         self.frame_aluno = Aluno_tab(master=self.alunotab)
+        self.frame_professor = Professor_tab(master=self.professortab)
+
     # !SECTION - Method: create_widgets
     # SECTION - Method: create_layout
 
